@@ -13,11 +13,11 @@ import { CustomTypeIcon } from "@/components/collection/CustomTypeIcon";
 
 const NAV_ITEMS = [
   { to: "/",           icon: <IconLayoutDashboard size={18} />, labelKey: "nav_dashboard" as const },
+  { to: "/movies",     icon: <IconMovie size={18} />,           labelKey: "nav_movies" as const },
   { to: "/books",      icon: <IconBook size={18} />,            labelKey: "nav_books" as const },
+  { to: "/music",      icon: <IconMusic size={18} />,           labelKey: "nav_music" as const },
   { to: "/comics",     icon: <IconBook2 size={18} />,           labelKey: "nav_comics" as const },
   { to: "/videogames", icon: <IconDeviceGamepad2 size={18} />,  labelKey: "nav_videogames" as const },
-  { to: "/movies",     icon: <IconMovie size={18} />,           labelKey: "nav_movies" as const },
-  { to: "/music",      icon: <IconMusic size={18} />,           labelKey: "nav_music" as const },
   { to: "/import",     icon: <IconUpload size={18} />,          labelKey: "nav_import" as const },
   { to: "/settings",   icon: <IconSettings size={18} />,        labelKey: "nav_settings" as const },
 ];

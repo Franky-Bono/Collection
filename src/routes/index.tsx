@@ -111,10 +111,10 @@ function DashboardPage() {
           <StatCard label={t("nav_music")} count={formatNumber(music.length)} icon={<IconMusic size={18} />} color="#d97706" onClick={() => navigate({ to: "/music" })} />
         </Grid.Col>
         <Grid.Col span={{ base: 10, sm: 5, md: 2 }}>
-          <StatCard label={t("nav_videogames")} count={formatNumber(videoGames.length)} icon={<IconDeviceGamepad2 size={18} />} color="#0891b2" onClick={() => navigate({ to: "/videogames" })} />
+          <StatCard label={t("nav_comics")} count={formatNumber(comics.length)} icon={<IconBook2 size={18} />} color="#7c3aed" onClick={() => navigate({ to: "/comics" })} />
         </Grid.Col>
         <Grid.Col span={{ base: 10, sm: 5, md: 2 }}>
-          <StatCard label={t("nav_comics")} count={formatNumber(comics.length)} icon={<IconBook2 size={18} />} color="#7c3aed" onClick={() => navigate({ to: "/comics" })} />
+          <StatCard label={t("nav_videogames")} count={formatNumber(videoGames.length)} icon={<IconDeviceGamepad2 size={18} />} color="#0891b2" onClick={() => navigate({ to: "/videogames" })} />
         </Grid.Col>
         {customTypes.map((ct, i) => (
           <Grid.Col key={ct.id} span={{ base: 10, sm: 5, md: 2 }}>
