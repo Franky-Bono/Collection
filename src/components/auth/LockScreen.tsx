@@ -3,15 +3,19 @@ import { useState } from "react";
 
 interface Props {
   hash: string;
+  onUnlock: () => void;
 }
 
 const SESSION_KEY = "collection-unlocked";
 
-export function LockScreen({ hash }: Props) {
-  const [already] = useState(() => sessionStorage.getItem(SESSION_KEY) === hash);
+export function LockScreen({ hash, onUnlock }: Props) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
-  const [unlocked, setUnlocked] = useState(already);
+
+  // Auto-unlock if session already verified
+  useState(() => {
+    if (sessionStorage.getItem(SESSION_KEY) === hash) onUnlock();
+  });
 
   const handleUnlock = async () => {
     const enc = new TextEncoder().encode(password);
@@ -19,13 +23,11 @@ export function LockScreen({ hash }: Props) {
     const computed = Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
     if (computed === hash) {
       sessionStorage.setItem(SESSION_KEY, hash);
-      setUnlocked(true);
+      onUnlock();
     } else {
       setError(true);
     }
   };
-
-  if (unlocked) return null;
 
   return (
     <Center style={{ height: "100vh" }}>

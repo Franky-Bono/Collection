@@ -6,6 +6,7 @@ import { theme } from "@/styles/theme";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { useAtomValue } from "jotai";
+import { useState } from "react";
 import { colorSchemeAtom, appPasswordHashAtom } from "@/state/atoms";
 import { LockScreen } from "@/components/auth/LockScreen";
 
@@ -13,7 +14,9 @@ const router = createRouter({ routeTree });
 
 function AppInner() {
   const passwordHash = useAtomValue(appPasswordHashAtom);
-  if (passwordHash) return <LockScreen hash={passwordHash} />;
+  const [unlocked, setUnlocked] = useState(!passwordHash);
+
+  if (passwordHash && !unlocked) return <LockScreen hash={passwordHash} onUnlock={() => setUnlocked(true)} />;
   return <RouterProvider router={router} />;
 }
 
