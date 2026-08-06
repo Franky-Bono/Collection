@@ -1,12 +1,14 @@
-import { Badge, Box, Drawer, Group, Image, Stack, Text, Title } from "@mantine/core";
+import { Badge, Box, Button, Drawer, Group, Image, Stack, Text, Title } from "@mantine/core";
+import { IconEdit } from "@tabler/icons-react";
 import type { AnyItem, CustomItem } from "@/types";
 import { useT } from "@/i18n/useT";
-import dayjs from "dayjs";
+import { useFormatting } from "@/hooks/useFormatting";
 
 interface Props {
   item: (AnyItem | CustomItem) | null;
   opened: boolean;
   onClose: () => void;
+  onEdit?: () => void;
 }
 
 function Field({ label, value }: { label: string; value?: string | number | null }) {
@@ -19,15 +21,23 @@ function Field({ label, value }: { label: string; value?: string | number | null
   );
 }
 
-export function DetailDrawer({ item, opened, onClose }: Props) {
+export function DetailDrawer({ item, opened, onClose, onEdit }: Props) {
   const t = useT();
+  const { formatDate } = useFormatting();
   if (!item) return null;
 
   const i = item as Record<string, unknown>;
 
   return (
     <Drawer opened={opened} onClose={onClose} position="right" size="sm" title={
-      <Title order={4}>{i.title as string}</Title>
+      <Group justify="space-between" style={{ flex: 1, paddingRight: 8 }}>
+        <Title order={4}>{i.title as string}</Title>
+        {onEdit && (
+          <Button size="xs" variant="light" leftSection={<IconEdit size={13} />} onClick={() => { onClose(); onEdit(); }}>
+            {t("form_edit")}
+          </Button>
+        )}
+      </Group>
     }>
       <Stack gap="sm">
         {Boolean(i.coverUrl) && (
@@ -58,13 +68,13 @@ export function DetailDrawer({ item, opened, onClose }: Props) {
         <Field label={t("col_location")}  value={i.location as string} />
         <Field label={t("col_rating")}    value={i.rating as number} />
         {Boolean(i.notes) && (
-          <Box>
-            <Text size="sm" c="dimmed" mb={4}>{t("col_notes")}</Text>
-            <Text size="sm">{i.notes as string}</Text>
+          <Box pt={4}>
+            <Text size="sm" c="dimmed" mb={6}>{t("col_notes")}</Text>
+            <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>{i.notes as string}</Text>
           </Box>
         )}
         <Text size="xs" c="dimmed" mt="md">
-          {t("dashboard_col_added")}: {dayjs(i.addedAt as string).format("MMM D, YYYY")}
+          {t("dashboard_col_added")}: {formatDate(i.addedAt as string)}
         </Text>
       </Stack>
     </Drawer>

@@ -401,7 +401,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
       {editItem && <ItemForm kind={kind} initial={editItem} opened={!!editItem} onClose={() => setEditItem(null)} onSave={handleEdit} />}
       <DeleteConfirm opened={!!deleteTarget} title={(deleteTarget as { title: string })?.title ?? ""} onConfirm={handleDelete} onCancel={() => setDeleteTarget(null)} />
       <LookupModal kind={kind} opened={lookupOpen} onClose={() => setLookupOpen(false)} onAdd={handleLookupAdd} />
-      <DetailDrawer item={detailItem} opened={!!detailItem} onClose={() => setDetailItem(null)} />
+      <DetailDrawer item={detailItem} opened={!!detailItem} onClose={() => setDetailItem(null)} onEdit={() => setEditItem(detailItem)} />
 
       <Modal opened={deleteSelected} onClose={() => setDeleteSelected(false)} title="Delete selected" centered size="sm">
         <Stack gap="md">
