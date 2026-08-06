@@ -1,0 +1,31 @@
+import { IconMovie } from "@tabler/icons-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { CollectionPage, FormatBadge, StatusBadge } from "@/components/collection/CollectionPage";
+import { moviesAtom } from "@/state/atoms";
+import type { Movie } from "@/types";
+import { useT } from "@/i18n/useT";
+
+export const Route = createFileRoute("/movies")({
+  component: MoviesPage,
+});
+
+function MoviesPage() {
+  const t = useT();
+  return (
+    <CollectionPage
+      title={t("nav_movies")}
+      singular="Movie"
+      icon={<IconMovie size={22} />}
+      atom={moviesAtom}
+      kind="movies"
+      columns={[
+        { key: "director", label: t("col_director"), width: 150 },
+        { key: "genre",    label: t("col_genre"),    width: 120 },
+        { key: "year",     label: t("col_year"),     width: 80  },
+        { key: "format",   label: t("col_format"),   width: 110, render: (item) => <FormatBadge value={(item as Movie).format} /> },
+        { key: "status",   label: t("col_status"),   width: 120, render: (item) => <StatusBadge value={(item as Movie).status} /> },
+        { key: "rating",   label: t("col_rating"),   width: 90  },
+      ]}
+    />
+  );
+}
