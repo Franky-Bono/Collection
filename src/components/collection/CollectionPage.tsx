@@ -255,48 +255,8 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
       </Group>
 
       {/* Table */}
-      <Card withBorder p={0} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
-        <Table style={{ tableLayout: "fixed" }}>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th style={{ width: 36 }}>
-                <Checkbox
-                  size="xs"
-                  checked={selected.size === sorted.length && sorted.length > 0}
-                  indeterminate={selected.size > 0 && selected.size < sorted.length}
-                  onChange={() => {
-                    if (selected.size === sorted.length) setSelected(new Set());
-                    else setSelected(new Set(sorted.map((i) => i.id)));
-                  }}
-                />
-              </Table.Th>
-              <Table.Th style={{ width: 48 }} />
-              <Table.Th>
-                <UnstyledButton onClick={() => toggleSort("title")} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <Text size="sm" fw={600}>{t("col_title" as TranslationKey)}</Text>
-                  {getSortIcon("title")}
-                  {sortKeys.findIndex((s) => s.key === "title") >= 0 && (
-                    <Badge size="xs" circle variant="filled">{sortKeys.findIndex((s) => s.key === "title") + 1}</Badge>
-                  )}
-                </UnstyledButton>
-              </Table.Th>
-              {columns.map((col) => (
-                <Table.Th key={col.key} style={{ width: col.width }}>
-                  <UnstyledButton onClick={() => toggleSort(col.key)} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <Text size="sm" fw={600}>{col.label}</Text>
-                    {getSortIcon(col.key)}
-                    {sortKeys.findIndex((s) => s.key === col.key) >= 0 && (
-                      <Badge size="xs" circle variant="filled">{sortKeys.findIndex((s) => s.key === col.key) + 1}</Badge>
-                    )}
-                  </UnstyledButton>
-                </Table.Th>
-              ))}
-              <Table.Th style={{ width: 72 }} />
-            </Table.Tr>
-          </Table.Thead>
-        </Table>
-
-        <Box ref={parentRef} style={{ flex: 1, overflowY: "auto" }}>
+      <Card withBorder p={0} style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
+        <Box ref={parentRef} style={{ height: "100%", overflowY: "auto" }}>
           <Table style={{ tableLayout: "fixed" }}>
             <colgroup>
               <col style={{ width: 36 }} />
@@ -307,6 +267,43 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
               ))}
               <col style={{ width: 72 }} />
             </colgroup>
+            <Table.Thead style={{ position: "sticky", top: 0, zIndex: 1, background: "var(--mantine-color-body)" }}>
+              <Table.Tr>
+                <Table.Th style={{ width: 36 }}>
+                  <Checkbox
+                    size="xs"
+                    checked={selected.size === sorted.length && sorted.length > 0}
+                    indeterminate={selected.size > 0 && selected.size < sorted.length}
+                    onChange={() => {
+                      if (selected.size === sorted.length) setSelected(new Set());
+                      else setSelected(new Set(sorted.map((i) => i.id)));
+                    }}
+                  />
+                </Table.Th>
+                <Table.Th style={{ width: 48 }} />
+                <Table.Th>
+                  <UnstyledButton onClick={() => toggleSort("title")} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <Text size="sm" fw={600}>{t("col_title" as TranslationKey)}</Text>
+                    {getSortIcon("title")}
+                    {sortKeys.findIndex((s) => s.key === "title") >= 0 && (
+                      <Badge size="xs" circle variant="filled">{sortKeys.findIndex((s) => s.key === "title") + 1}</Badge>
+                    )}
+                  </UnstyledButton>
+                </Table.Th>
+                {columns.map((col) => (
+                  <Table.Th key={col.key} style={{ width: col.width }}>
+                    <UnstyledButton onClick={() => toggleSort(col.key)} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                      <Text size="sm" fw={600}>{col.label}</Text>
+                      {getSortIcon(col.key)}
+                      {sortKeys.findIndex((s) => s.key === col.key) >= 0 && (
+                        <Badge size="xs" circle variant="filled">{sortKeys.findIndex((s) => s.key === col.key) + 1}</Badge>
+                      )}
+                    </UnstyledButton>
+                  </Table.Th>
+                ))}
+                <Table.Th style={{ width: 72 }} />
+              </Table.Tr>
+            </Table.Thead>
             <Table.Tbody>
               {sorted.length === 0 ? (
                 <Table.Tr>
