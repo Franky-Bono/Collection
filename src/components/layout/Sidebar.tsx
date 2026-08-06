@@ -19,7 +19,10 @@ const NAV_ITEMS = [
   { to: "/comics",     icon: <IconBook2 size={18} />,           labelKey: "nav_comics" as const },
   { to: "/videogames", icon: <IconDeviceGamepad2 size={18} />,  labelKey: "nav_videogames" as const },
   { to: "/import",     icon: <IconUpload size={18} />,          labelKey: "nav_import" as const },
-  { to: "/settings",   icon: <IconSettings size={18} />,        labelKey: "nav_settings" as const },
+];
+
+const BOTTOM_ITEMS = [
+  { to: "/settings", icon: <IconSettings size={18} />, labelKey: "nav_settings" as const },
 ];
 
 export function Sidebar() {
@@ -79,6 +82,22 @@ export function Sidebar() {
           })}
         </>
       )}
+
+      <Box style={{ marginTop: "auto" }}>
+        {BOTTOM_ITEMS.map(({ to, icon, labelKey }) => {
+          const isActive = location.pathname === to;
+          return (
+            <Tooltip key={to} label={t(labelKey)} disabled={!collapsed} position="right" withArrow>
+              <Link to={to} style={{ textDecoration: "none" }}>
+                <Box className={`${styles.link} ${collapsed ? styles.linkCollapsed : ""} ${isActive ? styles.active : ""}`}>
+                  {icon}
+                  {!collapsed && <span>{t(labelKey)}</span>}
+                </Box>
+              </Link>
+            </Tooltip>
+          );
+        })}
+      </Box>
     </Box>
   );
 }
