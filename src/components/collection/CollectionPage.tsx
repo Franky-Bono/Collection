@@ -298,6 +298,15 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
 
         <Box ref={parentRef} style={{ flex: 1, overflowY: "auto" }}>
           <Table style={{ tableLayout: "fixed" }}>
+            <colgroup>
+              <col style={{ width: 36 }} />
+              <col style={{ width: 48 }} />
+              <col />
+              {columns.map((col) => (
+                <col key={col.key} style={{ width: col.width }} />
+              ))}
+              <col style={{ width: 72 }} />
+            </colgroup>
             <Table.Tbody>
               {sorted.length === 0 ? (
                 <Table.Tr>
