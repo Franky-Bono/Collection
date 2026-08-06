@@ -47,16 +47,35 @@ const FORMAT_COLOR: Record<string, string> = {
   ebook: "violet", audiobook: "indigo",
 };
 
+const STATUS_KEY: Record<string, TranslationKey> = {
+  unread: "status_unread", reading: "status_reading", read: "status_read",
+  backlog: "status_backlog", playing: "status_playing", completed: "status_completed",
+  dropped: "status_dropped", unwatched: "status_unwatched", watched: "status_watched",
+  wishlist: "status_wishlist", owned: "status_owned", listened: "status_listened",
+};
+
+const FORMAT_KEY: Record<string, TranslationKey> = {
+  digital: "format_digital", physical: "format_physical", streaming: "format_streaming",
+  vinyl: "format_vinyl", cd: "format_cd", cassette: "format_cassette",
+  "e-book": "format_ebook", ebook: "format_ebook", audiobook: "format_audiobook",
+};
+
 export function StatusBadge({ value }: { value?: string }) {
+  const t = useT();
   if (!value) return <Text size="sm" c="dimmed">—</Text>;
-  const color = STATUS_COLOR[value.toLowerCase()] ?? "gray";
-  return <Badge size="sm" color={color} variant="light">{value}</Badge>;
+  const key = value.toLowerCase();
+  const color = STATUS_COLOR[key] ?? "gray";
+  const label = STATUS_KEY[key] ? t(STATUS_KEY[key]) : value;
+  return <Badge size="sm" color={color} variant="light">{label}</Badge>;
 }
 
 export function FormatBadge({ value }: { value?: string }) {
+  const t = useT();
   if (!value) return <Text size="sm" c="dimmed">—</Text>;
-  const color = FORMAT_COLOR[value.toLowerCase()] ?? "gray";
-  return <Badge size="sm" color={color} variant="dot">{value}</Badge>;
+  const key = value.toLowerCase();
+  const color = FORMAT_COLOR[key] ?? "gray";
+  const label = FORMAT_KEY[key] ? t(FORMAT_KEY[key]) : value;
+  return <Badge size="sm" color={color} variant="dot">{label}</Badge>;
 }
 
 function RatingStars({ rating }: { rating?: number }) {
