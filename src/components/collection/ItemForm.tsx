@@ -54,6 +54,7 @@ export function ItemForm({ kind, initial, opened, onClose, onSave }: Props) {
       publisher: (initial as unknown as Record<string, unknown>)?.publisher as string ?? "",
       condition: (initial as unknown as Record<string, unknown>)?.condition as string ?? "",
       edition: (initial as unknown as Record<string, unknown>)?.edition as string ?? "",
+      language: (initial as unknown as Record<string, unknown>)?.language as string ?? "",
       pages: (initial as unknown as Record<string, unknown>)?.pages as number ?? undefined,
       label: (initial as unknown as Record<string, unknown>)?.label as string ?? "",
       duration: (initial as unknown as Record<string, unknown>)?.duration as string ?? "",
@@ -110,6 +111,7 @@ export function ItemForm({ kind, initial, opened, onClose, onSave }: Props) {
           {kind === "books" && (
             <>
               <TextInput label={t("form_edition")}   {...form.getInputProps("edition")} />
+              <TextInput label={t("col_language")}   {...form.getInputProps("language")} />
               <NumberInput label={t("form_pages")}   {...form.getInputProps("pages")} />
               <TextInput label={t("form_publisher")} {...form.getInputProps("publisher")} />
             </>

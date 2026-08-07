@@ -20,13 +20,14 @@ function BooksPage() {
       atom={booksAtom}
       kind="books"
       columns={[
-        { key: "author",  label: t("col_author"),  width: 160 },
-        { key: "genre",   label: t("col_genre"),   width: 120 },
-        { key: "year",    label: t("col_year"),    width: 80  },
-        { key: "format",  label: t("col_format"),  width: 110, render: (item) => <FormatBadge value={(item as Book).format} /> },
-        { key: "status",  label: t("col_status"),  width: 120, render: (item) => <StatusBadge value={(item as Book).status} /> },
-        { key: "rating",  label: t("col_rating"),  width: 90  },
-        { key: "notes",   label: t("col_notes"),   width: 200, render: (item) => <Text size="sm" c="dimmed" truncate>{(item as Book).notes ?? ""}</Text> },
+        { key: "author",   label: t("col_author"),   width: 160 },
+        { key: "genre",    label: t("col_genre"),    width: 120 },
+        { key: "year",     label: t("col_year"),     width: 80  },
+        { key: "language", label: t("col_language"), width: 110 },
+        { key: "format",   label: t("col_format"),   width: 110, render: (item) => <FormatBadge value={(item as Book).format} /> },
+        { key: "status",   label: t("col_status"),   width: 120, render: (item) => <StatusBadge value={(item as Book).status} /> },
+        { key: "rating",   label: t("col_rating"),   width: 90  },
+        { key: "notes",    label: t("col_notes"),    width: 200, render: (item) => <Text size="sm" c="dimmed">{(item as Book).notes ?? ""}</Text> },
       ]}
     />
   );

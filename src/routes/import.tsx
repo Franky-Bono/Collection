@@ -16,7 +16,7 @@ export const Route = createFileRoute("/import")({
 type CollectionKind = "books" | "comics" | "videogames" | "movies" | "music";
 
 const FIELD_OPTIONS: Record<CollectionKind, string[]> = {
-  books:      ["title", "author", "genre", "year", "format", "status", "rating", "notes", "edition", "pages", "publisher", "location"],
+  books:      ["title", "author", "genre", "year", "format", "language", "status", "rating", "notes", "edition", "pages", "publisher", "location"],
   comics:     ["title", "editor", "series", "issue", "genre", "year", "format", "status", "rating", "notes", "publisher", "condition", "location"],
   videogames: ["title", "studio", "genre", "year", "platform", "status", "rating", "notes", "location"],
   movies:     ["title", "director", "genre", "year", "format", "edition", "status", "rating", "notes", "quality", "country", "location"],

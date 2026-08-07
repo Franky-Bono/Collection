@@ -66,6 +66,7 @@ const translations = {
     col_duration: "Duration",
     col_location: "Location",
     col_notes: "Notes",
+    col_language: "Language",
 
     // Status values
     status_unread: "Unread",
@@ -331,6 +332,7 @@ const translations = {
     col_duration: "Durée",
     col_location: "Emplacement",
     col_notes: "Notes",
+    col_language: "Langue",
 
     // Status values
     status_unread: "Non lu",

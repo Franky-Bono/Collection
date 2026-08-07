@@ -9,6 +9,7 @@ export interface Book {
   rating?: number;
   notes?: string;
   edition?: string;
+  language?: string;
   pages?: number;
   publisher?: string;
   location?: string;
