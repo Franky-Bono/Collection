@@ -1,6 +1,6 @@
 import { IconMovie } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
-import { CollectionPage, FormatBadge, StatusBadge } from "@/components/collection/CollectionPage";
+import { CollectionPage, FormatBadge, StatusBadge, getStatusLabel, getFormatLabel } from "@/components/collection/CollectionPage";
 import { moviesAtom } from "@/state/atoms";
 import type { Movie } from "@/types";
 import { useT } from "@/i18n/useT";
@@ -24,8 +24,8 @@ function MoviesPage() {
         { key: "year",     label: t("col_year"),     width: 80  },
         { key: "country",  label: t("col_country"),  width: 110 },
         { key: "edition",  label: t("col_edition"),  width: 120 },
-        { key: "format",   label: t("col_format"),   width: 110, render: (item) => <FormatBadge value={(item as Movie).format} /> },
-        { key: "status",   label: t("col_status"),   width: 120, render: (item) => <StatusBadge value={(item as Movie).status} /> },
+        { key: "format",   label: t("col_format"),   width: 110, render: (item) => <FormatBadge value={(item as Movie).format} />, getSearchValue: (item) => getFormatLabel((item as Movie).format ?? "", t) },
+        { key: "status",   label: t("col_status"),   width: 120, render: (item) => <StatusBadge value={(item as Movie).status} />, getSearchValue: (item) => getStatusLabel((item as Movie).status ?? "", t) },
         { key: "rating",   label: t("col_rating"),   width: 90  },
         { key: "location", label: t("col_location"), width: 120 },
       ]}

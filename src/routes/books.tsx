@@ -1,6 +1,6 @@
 import { IconBook } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
-import { CollectionPage, FormatBadge, StatusBadge } from "@/components/collection/CollectionPage";
+import { CollectionPage, FormatBadge, StatusBadge, getStatusLabel, getFormatLabel } from "@/components/collection/CollectionPage";
 import { booksAtom } from "@/state/atoms";
 import type { Book } from "@/types";
 import { useT } from "@/i18n/useT";
@@ -24,8 +24,8 @@ function BooksPage() {
         { key: "genre",    label: t("col_genre"),    width: 120 },
         { key: "year",     label: t("col_year"),     width: 80  },
         { key: "language", label: t("col_language"), width: 110 },
-        { key: "format",   label: t("col_format"),   width: 110, render: (item) => <FormatBadge value={(item as Book).format} /> },
-        { key: "status",   label: t("col_status"),   width: 120, render: (item) => <StatusBadge value={(item as Book).status} /> },
+        { key: "format",   label: t("col_format"),   width: 110, render: (item) => <FormatBadge value={(item as Book).format} />, getSearchValue: (item) => getFormatLabel((item as Book).format ?? "", t) },
+        { key: "status",   label: t("col_status"),   width: 120, render: (item) => <StatusBadge value={(item as Book).status} />, getSearchValue: (item) => getStatusLabel((item as Book).status ?? "", t) },
         { key: "rating",   label: t("col_rating"),   width: 90  },
         { key: "notes",    label: t("col_notes"),    width: 200, render: (item) => <Text size="sm" c="dimmed">{(item as Book).notes ?? ""}</Text> },
       ]}

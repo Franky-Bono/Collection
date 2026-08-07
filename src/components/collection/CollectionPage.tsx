@@ -1,9 +1,9 @@
-import { ActionIcon, Badge, Box, Button, Card, Checkbox, Group, Modal, Table, Text, TextInput, Select, Stack, UnstyledButton } from "@mantine/core";
+import { ActionIcon, Badge, Box, Button, Card, Checkbox, Group, Modal, Table, Text, TextInput, Stack, UnstyledButton } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconBarcode, IconChevronDown, IconChevronUp, IconEdit, IconPlus, IconSelector, IconTrash, IconX } from "@tabler/icons-react";
 import type { WritableAtom } from "jotai";
 import { useAtom } from "jotai";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { AnyItem } from "@/types";
 import { DeleteConfirm } from "./DeleteConfirm";
@@ -22,6 +22,7 @@ interface ColumnDef {
   label: string;
   width?: number;
   render?: (item: AnyItem) => React.ReactNode;
+  getSearchValue?: (item: AnyItem) => string;
 }
 
 interface Props {
@@ -60,6 +61,16 @@ const FORMAT_KEY: Record<string, TranslationKey> = {
   "e-book": "format_ebook", ebook: "format_ebook", audiobook: "format_audiobook",
 };
 
+export function getStatusLabel(value: string, t: (k: TranslationKey) => string): string {
+  const key = value.toLowerCase();
+  return STATUS_KEY[key] ? t(STATUS_KEY[key]) : value;
+}
+
+export function getFormatLabel(value: string, t: (k: TranslationKey) => string): string {
+  const key = value.toLowerCase();
+  return FORMAT_KEY[key] ? t(FORMAT_KEY[key]) : value;
+}
+
 export function StatusBadge({ value }: { value?: string }) {
   const t = useT();
   if (!value) return <Text size="sm" c="dimmed">—</Text>;
@@ -95,8 +106,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
   const t = useT();
   const { formatNumber } = useFormatting();
   const [items, setItems] = useAtom(atom);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [sortKeys, setSortKeys] = useState<SortKey[]>([]);
   const [addOpen, setAddOpen] = useState(false);
   const [editItem, setEditItem] = useState<AnyItem | null>(null);
@@ -107,26 +117,32 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
   const [deleteSelected, setDeleteSelected] = useState(false);
   const parentRef = useRef<HTMLDivElement>(null);
 
-  const statuses = useMemo(() => {
-    const set = new Set<string>();
-    items.forEach((item) => { if ((item as unknown as Record<string, unknown>).status) set.add((item as unknown as Record<string, unknown>).status as string); });
-    return Array.from(set);
-  }, [items]);
+  const setFilter = (key: string, value: string) => {
+    setColumnFilters((prev) => {
+      if (!value) { const next = { ...prev }; delete next[key]; return next; }
+      return { ...prev, [key]: value };
+    });
+  };
+
+  const allColumns = [
+    { key: "title", label: t("col_title" as TranslationKey), getSearchValue: undefined as ColumnDef["getSearchValue"] },
+    ...columns,
+  ];
 
   const filtered = useMemo(() => {
+    const activeFilters = Object.entries(columnFilters).filter(([, v]) => v.trim() !== "");
+    if (activeFilters.length === 0) return items;
     return items.filter((item) => {
-      if (search) {
-        const q = search.toLowerCase();
-        const rec = item as unknown as Record<string, unknown>;
-        const matchesAny = Object.values(rec).some((v) =>
-          v !== null && v !== undefined && String(v).toLowerCase().includes(q)
-        );
-        if (!matchesAny) return false;
-      }
-      const matchStatus = !statusFilter || (item as unknown as Record<string, unknown>).status === statusFilter;
-      return matchStatus;
+      return activeFilters.every(([key, q]) => {
+        const col = allColumns.find((c) => c.key === key);
+        const searchVal = col?.getSearchValue
+          ? col.getSearchValue(item)
+          : String(getValue(item, key));
+        return searchVal.toLowerCase().includes(q.toLowerCase());
+      });
     });
-  }, [items, search, statusFilter]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, columnFilters]);
 
   const sorted = useMemo(() => sortKeys.length === 0 ? filtered : [...filtered].sort((a, b) => {
     for (const { key, dir } of sortKeys) {
@@ -218,7 +234,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
     });
   };
 
-  // Two arrays for virtualizer padding trick
+  const hasFilters = Object.keys(columnFilters).length > 0;
   const items2 = rowVirtualizer.getVirtualItems();
 
   return (
@@ -231,8 +247,18 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
           <Badge variant="light" color="blue" size="lg">
             {filtered.length < items.length ? `${formatNumber(filtered.length)} / ${formatNumber(items.length)}` : formatNumber(items.length)}
           </Badge>
+          {selected.size > 0 && (
+            <Button size="xs" color="red" variant="subtle" leftSection={<IconTrash size={13} />} onClick={() => setDeleteSelected(true)}>
+              {t("collection_delete_selected", { count: formatNumber(selected.size) })}
+            </Button>
+          )}
         </Group>
         <Group gap="xs">
+          {hasFilters && (
+            <Button size="xs" variant="subtle" onClick={() => setColumnFilters({})}>
+              {t("delete_cancel")}
+            </Button>
+          )}
           <Button
             variant="default"
             leftSection={<IconBarcode size={16} />}
@@ -249,37 +275,6 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
         </Group>
       </Group>
 
-      {/* Filters */}
-      <Group mb="md" gap="sm">
-        <TextInput
-          placeholder={t("collection_search_placeholder")}
-          value={search}
-          onChange={(e) => setSearch(e.currentTarget.value)}
-          style={{ flex: 1, maxWidth: 300 }}
-          rightSection={search ? <ActionIcon size="xs" variant="subtle" onClick={() => setSearch("")}><IconX size={12} /></ActionIcon> : null}
-        />
-        {statuses.length > 0 && (
-          <Select
-            placeholder={t("collection_all_statuses")}
-            value={statusFilter}
-            onChange={setStatusFilter}
-            data={statuses}
-            clearable
-            style={{ width: 160 }}
-          />
-        )}
-        {(search || statusFilter) && (
-          <Button size="xs" variant="subtle" onClick={() => { setSearch(""); setStatusFilter(null); }}>
-            {t("delete_cancel")}
-          </Button>
-        )}
-        {selected.size > 0 && (
-          <Button size="xs" color="red" variant="subtle" leftSection={<IconTrash size={13} />} onClick={() => setDeleteSelected(true)}>
-            {t("collection_delete_selected", { count: formatNumber(selected.size) })}
-          </Button>
-        )}
-      </Group>
-
       {/* Table */}
       <Card withBorder p={0} style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
         <Box ref={parentRef} style={{ height: "100%", overflowY: "auto" }}>
@@ -294,6 +289,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
               <col style={{ width: 72 }} />
             </colgroup>
             <Table.Thead style={{ position: "sticky", top: 0, zIndex: 1, background: "var(--mantine-color-body)" }}>
+              {/* Sort header row */}
               <Table.Tr>
                 <Table.Th style={{ width: 36 }} />
                 <Table.Th style={{ width: 48 }} />
@@ -318,6 +314,32 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
                   </Table.Th>
                 ))}
                 <Table.Th style={{ width: 72 }} />
+              </Table.Tr>
+              {/* Per-column filter row */}
+              <Table.Tr>
+                <Table.Td style={{ width: 36 }} />
+                <Table.Td style={{ width: 48 }} />
+                <Table.Td>
+                  <TextInput
+                    size="xs"
+                    placeholder={t("col_title" as TranslationKey)}
+                    value={columnFilters["title"] ?? ""}
+                    onChange={(e) => setFilter("title", e.currentTarget.value)}
+                    rightSection={columnFilters["title"] ? <ActionIcon size="xs" variant="subtle" onClick={() => setFilter("title", "")}><IconX size={10} /></ActionIcon> : null}
+                  />
+                </Table.Td>
+                {columns.map((col) => (
+                  <Table.Td key={col.key} style={{ width: col.width }}>
+                    <TextInput
+                      size="xs"
+                      placeholder={col.label}
+                      value={columnFilters[col.key] ?? ""}
+                      onChange={(e) => setFilter(col.key, e.currentTarget.value)}
+                      rightSection={columnFilters[col.key] ? <ActionIcon size="xs" variant="subtle" onClick={() => setFilter(col.key, "")}><IconX size={10} /></ActionIcon> : null}
+                    />
+                  </Table.Td>
+                ))}
+                <Table.Td style={{ width: 72 }} />
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>

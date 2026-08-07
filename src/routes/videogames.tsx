@@ -1,6 +1,6 @@
 import { IconDeviceGamepad2 } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
-import { CollectionPage, StatusBadge } from "@/components/collection/CollectionPage";
+import { CollectionPage, StatusBadge, getStatusLabel } from "@/components/collection/CollectionPage";
 import { videoGamesAtom } from "@/state/atoms";
 import type { VideoGame } from "@/types";
 import { useT } from "@/i18n/useT";
@@ -23,7 +23,7 @@ function VideoGamesPage() {
         { key: "genre",    label: t("col_genre"),    width: 120 },
         { key: "year",     label: t("col_year"),     width: 80  },
         { key: "platform", label: t("col_platform"), width: 120 },
-        { key: "status",   label: t("col_status"),   width: 120, render: (item) => <StatusBadge value={(item as VideoGame).status} /> },
+        { key: "status",   label: t("col_status"),   width: 120, render: (item) => <StatusBadge value={(item as VideoGame).status} />, getSearchValue: (item) => getStatusLabel((item as VideoGame).status ?? "", t) },
         { key: "rating",   label: t("col_rating"),   width: 90  },
       ]}
     />
