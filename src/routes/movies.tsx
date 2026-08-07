@@ -22,6 +22,7 @@ function MoviesPage() {
         { key: "director", label: t("col_director"), width: 150 },
         { key: "genre",    label: t("col_genre"),    width: 120 },
         { key: "year",     label: t("col_year"),     width: 80  },
+        { key: "edition",  label: t("col_edition"),  width: 120 },
         { key: "format",   label: t("col_format"),   width: 110, render: (item) => <FormatBadge value={(item as Movie).format} /> },
         { key: "status",   label: t("col_status"),   width: 120, render: (item) => <StatusBadge value={(item as Movie).status} /> },
         { key: "rating",   label: t("col_rating"),   width: 90  },

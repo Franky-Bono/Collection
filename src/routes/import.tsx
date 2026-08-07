@@ -19,7 +19,7 @@ const FIELD_OPTIONS: Record<CollectionKind, string[]> = {
   books:      ["title", "author", "genre", "year", "format", "status", "rating", "notes", "edition", "pages", "publisher", "location"],
   comics:     ["title", "editor", "series", "issue", "genre", "year", "format", "status", "rating", "notes", "publisher", "condition", "location"],
   videogames: ["title", "studio", "genre", "year", "platform", "status", "rating", "notes", "location"],
-  movies:     ["title", "director", "genre", "year", "format", "status", "rating", "notes", "quality", "country", "location"],
+  movies:     ["title", "director", "genre", "year", "format", "edition", "status", "rating", "notes", "quality", "country", "location"],
   music:      ["title", "artist", "genre", "year", "format", "status", "rating", "notes", "label", "duration", "location"],
 };
 
