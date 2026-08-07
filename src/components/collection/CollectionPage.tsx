@@ -344,7 +344,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
                     return (
                       <Table.Tr
                         key={item.id}
-                        style={{ height: ROW_HEIGHT, cursor: "pointer" }}
+                        style={{ minHeight: ROW_HEIGHT, cursor: "pointer" }}
                         onClick={() => setDetailItem(item)}
                       >
                         <Table.Td style={{ width: 36 }} onClick={(e) => e.stopPropagation()}>
@@ -357,7 +357,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
                           }
                         </Table.Td>
                         <Table.Td>
-                          <Text size="sm" fw={600} truncate>{(item as { title: string }).title}</Text>
+                          <Text size="sm" fw={600} style={{ whiteSpace: "normal", wordBreak: "break-word" }}>{(item as { title: string }).title}</Text>
                         </Table.Td>
                         {columns.map((col) => (
                           <Table.Td key={col.key} style={{ width: col.width }}>
@@ -365,7 +365,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
                               ? col.render(item)
                               : col.key === "rating"
                                 ? <RatingStars rating={(item as unknown as Record<string, unknown>)[col.key] as number} />
-                                : <Text size="sm" truncate>{String((item as unknown as Record<string, unknown>)[col.key] ?? "")}</Text>
+                                : <Text size="sm" style={{ whiteSpace: "normal", wordBreak: "break-word" }}>{String((item as unknown as Record<string, unknown>)[col.key] ?? "")}</Text>
                             }
                           </Table.Td>
                         ))}
