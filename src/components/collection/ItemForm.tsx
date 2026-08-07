@@ -123,6 +123,7 @@ export function ItemForm({ kind, initial, opened, onClose, onSave }: Props) {
 
           {kind === "movies" && (
             <>
+              <TextInput label={t("form_duration")} placeholder={t("form_duration_placeholder")} {...form.getInputProps("duration")} />
               <TextInput label={t("form_edition")}  {...form.getInputProps("edition")} />
               <TextInput label={t("form_quality")}  placeholder={t("form_quality_placeholder")} {...form.getInputProps("quality")} />
               <TextInput label={t("form_country")}  {...form.getInputProps("country")} />

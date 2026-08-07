@@ -57,6 +57,7 @@ export interface Movie {
   director?: string;
   genre?: string;
   year?: number;
+  duration?: string;
   format?: string;
   edition?: string;
   status?: string;
