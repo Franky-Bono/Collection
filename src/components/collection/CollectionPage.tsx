@@ -235,7 +235,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
     });
   };
 
-  const hasFilters = Object.keys(columnFilters).length > 0;
+  const hasFilters = Object.values(columnFilters).some((v) => v.trim() !== "");
   const items2 = rowVirtualizer.getVirtualItems();
 
   return (
@@ -340,7 +340,13 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
                     />
                   </Table.Td>
                 ))}
-                <Table.Td style={{ width: 72 }} />
+                <Table.Td style={{ width: 72 }}>
+                  {hasFilters && (
+                    <ActionIcon size="sm" variant="subtle" color="red" title="Reset filters" onClick={() => setColumnFilters({})}>
+                      <IconX size={14} />
+                    </ActionIcon>
+                  )}
+                </Table.Td>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
