@@ -295,17 +295,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
             </colgroup>
             <Table.Thead style={{ position: "sticky", top: 0, zIndex: 1, background: "var(--mantine-color-body)" }}>
               <Table.Tr>
-                <Table.Th style={{ width: 36 }}>
-                  <Checkbox
-                    size="xs"
-                    checked={selected.size === sorted.length && sorted.length > 0}
-                    indeterminate={selected.size > 0 && selected.size < sorted.length}
-                    onChange={() => {
-                      if (selected.size === sorted.length) setSelected(new Set());
-                      else setSelected(new Set(sorted.map((i) => i.id)));
-                    }}
-                  />
-                </Table.Th>
+                <Table.Th style={{ width: 36 }} />
                 <Table.Th style={{ width: 48 }} />
                 <Table.Th>
                   <UnstyledButton onClick={() => toggleSort("title")} style={{ display: "flex", alignItems: "center", gap: 4 }}>
