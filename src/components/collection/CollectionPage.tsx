@@ -115,9 +115,16 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
 
   const filtered = useMemo(() => {
     return items.filter((item) => {
-      const matchSearch = !search || (item as unknown as { title: string }).title.toLowerCase().includes(search.toLowerCase());
+      if (search) {
+        const q = search.toLowerCase();
+        const rec = item as unknown as Record<string, unknown>;
+        const matchesAny = Object.values(rec).some((v) =>
+          v !== null && v !== undefined && String(v).toLowerCase().includes(q)
+        );
+        if (!matchesAny) return false;
+      }
       const matchStatus = !statusFilter || (item as unknown as Record<string, unknown>).status === statusFilter;
-      return matchSearch && matchStatus;
+      return matchStatus;
     });
   }, [items, search, statusFilter]);
 
@@ -302,20 +309,20 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
                 <Table.Th style={{ width: 48 }} />
                 <Table.Th>
                   <UnstyledButton onClick={() => toggleSort("title")} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <Text size="sm" fw={600}>{t("col_title" as TranslationKey)}</Text>
+                    <Text size="sm" fw={600} c={sortKeys.find(s => s.key === "title") ? "blue" : undefined}>{t("col_title" as TranslationKey)}</Text>
                     {getSortIcon("title")}
                     {sortKeys.findIndex((s) => s.key === "title") >= 0 && (
-                      <Badge size="xs" circle variant="filled">{sortKeys.findIndex((s) => s.key === "title") + 1}</Badge>
+                      <Text size="xs" c="blue" fw={700}>{sortKeys.findIndex((s) => s.key === "title") + 1}</Text>
                     )}
                   </UnstyledButton>
                 </Table.Th>
                 {columns.map((col) => (
                   <Table.Th key={col.key} style={{ width: col.width }}>
                     <UnstyledButton onClick={() => toggleSort(col.key)} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                      <Text size="sm" fw={600}>{col.label}</Text>
+                      <Text size="sm" fw={600} c={sortKeys.find(s => s.key === col.key) ? "blue" : undefined}>{col.label}</Text>
                       {getSortIcon(col.key)}
                       {sortKeys.findIndex((s) => s.key === col.key) >= 0 && (
-                        <Badge size="xs" circle variant="filled">{sortKeys.findIndex((s) => s.key === col.key) + 1}</Badge>
+                        <Text size="xs" c="blue" fw={700}>{sortKeys.findIndex((s) => s.key === col.key) + 1}</Text>
                       )}
                     </UnstyledButton>
                   </Table.Th>
