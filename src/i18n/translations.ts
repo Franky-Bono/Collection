@@ -36,6 +36,9 @@ const translations = {
     collection_no_results: "No results match your search.",
     collection_add: "Add {singular}",
     collection_search_barcode: "Search / Barcode",
+    collection_delete_selected: "Delete {count} selected",
+    collection_delete_selected_title: "Delete selected",
+    collection_delete_selected_body: "Delete {count} selected items? This cannot be undone.",
 
     // Table columns
     col_title: "Title",
@@ -298,6 +301,9 @@ const translations = {
     collection_no_results: "Aucun résultat ne correspond à votre recherche.",
     collection_add: "Ajouter {singular}",
     collection_search_barcode: "Recherche / Code-barres",
+    collection_delete_selected: "Supprimer {count} sélectionnés",
+    collection_delete_selected_title: "Supprimer la sélection",
+    collection_delete_selected_body: "Supprimer {count} éléments sélectionnés ? Cette action est irréversible.",
 
     // Table columns
     col_title: "Titre",

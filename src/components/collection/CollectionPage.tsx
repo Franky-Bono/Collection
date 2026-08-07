@@ -275,7 +275,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
         )}
         {selected.size > 0 && (
           <Button size="xs" color="red" variant="subtle" leftSection={<IconTrash size={13} />} onClick={() => setDeleteSelected(true)}>
-            Delete {selected.size} selected
+            {t("collection_delete_selected", { count: formatNumber(selected.size) })}
           </Button>
         )}
       </Group>
@@ -400,12 +400,12 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
       <LookupModal kind={kind} opened={lookupOpen} onClose={() => setLookupOpen(false)} onAdd={handleLookupAdd} />
       <DetailDrawer item={detailItem} opened={!!detailItem} onClose={() => setDetailItem(null)} onEdit={() => setEditItem(detailItem)} />
 
-      <Modal opened={deleteSelected} onClose={() => setDeleteSelected(false)} title="Delete selected" centered size="sm">
+      <Modal opened={deleteSelected} onClose={() => setDeleteSelected(false)} title={t("collection_delete_selected_title")} centered size="sm">
         <Stack gap="md">
-          <Text size="sm">Delete {selected.size} selected items? This cannot be undone.</Text>
+          <Text size="sm">{t("collection_delete_selected_body", { count: formatNumber(selected.size) })}</Text>
           <Group justify="flex-end">
-            <Button variant="default" onClick={() => setDeleteSelected(false)}>Cancel</Button>
-            <Button color="red" onClick={handleDeleteSelected}>Delete</Button>
+            <Button variant="default" onClick={() => setDeleteSelected(false)}>{t("delete_cancel")}</Button>
+            <Button color="red" onClick={handleDeleteSelected}>{t("delete_confirm")}</Button>
           </Group>
         </Stack>
       </Modal>
