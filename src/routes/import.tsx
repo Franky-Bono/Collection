@@ -31,7 +31,7 @@ function ImportPage() {
   const [, setMovies] = useAtom(moviesAtom);
   const [, setMusic] = useAtom(musicAtom);
 
-  const [kind, setKind] = useState<CollectionKind>("books");
+  const [kind, setKind] = useState<CollectionKind>("movies");
   const [headers, setHeaders] = useState<string[]>([]);
   const [rows, setRows] = useState<Record<string, string>[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
@@ -99,7 +99,7 @@ function ImportPage() {
     if (kind === "videogames") setVideoGames((prev) => [...prev, ...items as unknown as VideoGame[]]);
     if (kind === "movies")     setMovies((prev) => [...prev, ...items as unknown as Movie[]]);
     if (kind === "music")      setMusic((prev) => [...prev, ...items as unknown as MusicAlbum[]]);
-    notifications.show({ message: `Imported ${items.length} items`, color: "green" });
+    notifications.show({ message: t("import_success", { count: items.length }), color: "green" });
     setHeaders([]); setRows([]); setMapping({});
   };
 
@@ -114,24 +114,24 @@ function ImportPage() {
               value={kind}
               onChange={(v) => { setKind(v as CollectionKind); setHeaders([]); setRows([]); setMapping({}); }}
               data={[
+                { value: "movies",     label: t("nav_movies") },
                 { value: "books",      label: t("nav_books") },
+                { value: "music",      label: t("nav_music") },
                 { value: "comics",     label: t("nav_comics") },
                 { value: "videogames", label: t("nav_videogames") },
-                { value: "movies",     label: t("nav_movies") },
-                { value: "music",      label: t("nav_music") },
               ]}
             />
             <input ref={fileRef} type="file" accept=".csv,.xlsx,.xls" style={{ display: "none" }}
               onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
             <Button variant="default" onClick={() => fileRef.current?.click()}>
-              Choose CSV or Excel file
+              {t("import_choose_file")}
             </Button>
           </Stack>
         </Card>
 
         {headers.length > 0 && (
           <Card withBorder>
-            <Text fw={600} mb="md">Map columns</Text>
+            <Text fw={600} mb="md">{t("import_map_columns")}</Text>
             <Stack gap="xs" style={{ overflowX: "auto" }}>
               {headers.map((h) => (
                 <Group key={h}>
@@ -140,7 +140,7 @@ function ImportPage() {
                     size="xs"
                     value={mapping[h] ?? ""}
                     onChange={(v) => setMapping({ ...mapping, [h]: v ?? "" })}
-                    data={[{ value: "", label: "— skip —" }, ...FIELD_OPTIONS[kind].map((f) => ({ value: f, label: f }))]}
+                    data={[{ value: "", label: t("import_skip") }, ...FIELD_OPTIONS[kind].map((f) => ({ value: f, label: f }))]}
                     style={{ flex: 1 }}
                     clearable
                   />
@@ -152,7 +152,7 @@ function ImportPage() {
 
         {rows.length > 0 && (
           <Card withBorder>
-            <Text fw={600} mb="md">Preview (first {rows.length} rows)</Text>
+            <Text fw={600} mb="md">{t("import_preview", { count: rows.length })}</Text>
             <Box style={{ overflowX: "auto" }}>
               <Table fz="xs">
                 <Table.Thead>
@@ -165,7 +165,7 @@ function ImportPage() {
                 </Table.Tbody>
               </Table>
             </Box>
-            <Button mt="md" onClick={handleImport}>Import {rows.length} items</Button>
+            <Button mt="md" onClick={handleImport}>{t("import_btn", { count: rows.length })}</Button>
           </Card>
         )}
       </Stack>

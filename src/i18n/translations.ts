@@ -210,6 +210,14 @@ const translations = {
     settings_export_success: "Collection exported successfully.",
     settings_import_error: "Could not import file.",
 
+    // Import page
+    import_choose_file: "Choose CSV or Excel file",
+    import_map_columns: "Map columns",
+    import_skip: "— skip —",
+    import_preview: "Preview (first {count} rows)",
+    import_btn: "Import {count} items",
+    import_success: "Imported {count} items",
+
     // Danger zone
     settings_danger_title: "Danger zone",
     settings_danger_hint: "Permanently delete all items in a collection. This cannot be undone.",
@@ -463,6 +471,14 @@ const translations = {
     settings_import_success: "Collection importée avec succès.",
     settings_export_success: "Collection exportée avec succès.",
     settings_import_error: "Impossible d'importer le fichier.",
+
+    // Import page
+    import_choose_file: "Choisir un fichier CSV ou Excel",
+    import_map_columns: "Mapper les colonnes",
+    import_skip: "— ignorer —",
+    import_preview: "Aperçu (premières {count} lignes)",
+    import_btn: "Importer {count} éléments",
+    import_success: "{count} éléments importés",
 
     // Danger zone
     settings_danger_title: "Zone de danger",
