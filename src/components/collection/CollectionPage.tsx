@@ -32,6 +32,7 @@ interface Props {
   atom: WritableAtom<AnyItem[], [AnyItem[]], void>;
   kind: CollectionKind;
   columns: ColumnDef[];
+  titleWidth?: number;
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -102,7 +103,7 @@ function getValue(item: AnyItem, key: string): string | number {
 
 type SortKey = { key: string; dir: "asc" | "desc" };
 
-export function CollectionPage({ title, singular, icon, atom, kind, columns }: Props) {
+export function CollectionPage({ title, singular, icon, atom, kind, columns, titleWidth }: Props) {
   const t = useT();
   const { formatNumber } = useFormatting();
   const [items, setItems] = useAtom(atom);
@@ -282,7 +283,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns }: P
             <colgroup>
               <col style={{ width: 36 }} />
               <col style={{ width: 48 }} />
-              <col />
+              <col style={titleWidth ? { width: titleWidth } : undefined} />
               {columns.map((col) => (
                 <col key={col.key} style={{ width: col.width }} />
               ))}

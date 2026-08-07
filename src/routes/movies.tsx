@@ -18,6 +18,7 @@ function MoviesPage() {
       icon={<IconMovie size={22} />}
       atom={moviesAtom}
       kind="movies"
+      titleWidth={250}
       columns={[
         { key: "director", label: t("col_director"), width: 150 },
         { key: "genre",    label: t("col_genre"),    width: 120 },
