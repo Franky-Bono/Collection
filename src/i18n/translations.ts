@@ -30,7 +30,7 @@ const translations = {
     dashboard_type_music: "Music",
 
     // Collection page (generic)
-    collection_search_placeholder: "Search by title...",
+    collection_search_placeholder: "Search (title, director, genre...)",
     collection_all_statuses: "All statuses",
     collection_no_items: "No {title} yet. Add your first one!",
     collection_no_results: "No results match your search.",
@@ -296,7 +296,7 @@ const translations = {
     dashboard_type_music: "Musique",
 
     // Collection page (generic)
-    collection_search_placeholder: "Rechercher par titre...",
+    collection_search_placeholder: "Rechercher (titre, réalisateur, genre...)",
     collection_all_statuses: "Tous les statuts",
     collection_no_items: "Aucun(e) {title} pour l'instant. Ajoutez le premier !",
     collection_no_results: "Aucun résultat ne correspond à votre recherche.",

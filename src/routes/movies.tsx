@@ -27,6 +27,7 @@ function MoviesPage() {
         { key: "format",   label: t("col_format"),   width: 110, render: (item) => <FormatBadge value={(item as Movie).format} /> },
         { key: "status",   label: t("col_status"),   width: 120, render: (item) => <StatusBadge value={(item as Movie).status} /> },
         { key: "rating",   label: t("col_rating"),   width: 90  },
+        { key: "location", label: t("col_location"), width: 120 },
       ]}
     />
   );
