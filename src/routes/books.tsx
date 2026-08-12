@@ -16,7 +16,7 @@ function BooksPage() {
   const [bookColumns, setBookColumns] = useAtom(bookColumnsAtom);
 
   const ALL_COLUMNS = [
-    { key: "author",   label: t("col_author"),   width: 160 },
+    { key: "author",   label: t("col_author"),   width: 200 },
     { key: "genre",    label: t("col_genre"),    width: 120 },
     { key: "year",     label: t("col_year"),     width: 80  },
     { key: "language", label: t("col_language"), width: 110 },
