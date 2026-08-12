@@ -143,6 +143,22 @@ export function useDriveSync() {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [books, comics, videoGames, movies, music, customTypes, customItems, enabled, pushToDrive]);
 
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (!enabled) {
+      if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+      return;
+    }
+    if (pollRef.current) return;
+    pollRef.current = setInterval(() => {
+      if (isSignedIn() && !isSyncingRef.current && !debounceRef.current) loadFromDrive();
+    }, 30000);
+    return () => {
+      if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+    };
+  }, [enabled, loadFromDrive]);
+
   const connect = useCallback(async (id: string) => {
     await initGoogleDrive(id);
     await signIn();
