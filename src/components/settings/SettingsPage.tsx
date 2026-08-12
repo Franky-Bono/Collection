@@ -78,7 +78,7 @@ export function SettingsPage() {
   const [draftClientId, setDraftClientId] = useState(clientId);
   const syncStatus = useAtomValue(driveSyncStatusAtom);
   const lastSync = useAtomValue(driveLastSyncAtom);
-  const { connect, disconnect, syncNow, user: driveUser, enabled: driveEnabled, signedIn: driveSignedIn } = useDriveSync();
+  const { connect, disconnect, syncNow, user: driveUser, enabled: driveEnabled, signedIn: driveSignedIn, hasPending } = useDriveSync();
 
   const handleNewType = (type: CustomCollectionType) => {
     setCustomTypes([...customTypes, type]);
@@ -335,6 +335,11 @@ export function SettingsPage() {
               {!driveSignedIn && (
                 <Alert icon={<IconAlertCircle size={14} />} color="yellow" variant="light" p="xs">
                   <Text size="xs">Session expired — click Sync Now to re-authenticate and load latest data.</Text>
+                </Alert>
+              )}
+              {driveSignedIn && hasPending && (
+                <Alert icon={<IconAlertCircle size={14} />} color="orange" variant="light" p="xs">
+                  <Text size="xs">Unsaved changes — click Sync Now to push your edits to Google Drive.</Text>
                 </Alert>
               )}
               <Text size="xs" c="dimmed">{t("settings_drive_auto_hint")}</Text>

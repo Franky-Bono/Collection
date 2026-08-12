@@ -12,30 +12,15 @@ import {
 } from "@/lib/driveSync";
 import type { CollectionData, CustomItem } from "@/types";
 
-function readLocalAll(): CollectionData & { music: unknown[]; customItems: Record<string, CustomItem[]> } {
-  const parse = <T>(key: string, fallback: T): T => {
-    try { return JSON.parse(localStorage.getItem(key) ?? JSON.stringify(fallback)); }
-    catch { return fallback; }
-  };
-  return {
-    books:       parse("collection-books", []),
-    comics:      parse("collection-comics", []),
-    videoGames:  parse("collection-videogames", []),
-    movies:      parse("collection-movies", []),
-    music:       parse("collection-music", []),
-    customTypes: parse("collection-custom-types", []),
-    customItems: parse("collection-custom-items", {}),
-    version: 1,
-  };
-}
+type Snapshot = CollectionData & { music: unknown[]; customItems: Record<string, CustomItem[]> };
 
-// Module-level singletons — shared across all hook instances so SettingsPage
-// and RootLayout don't create conflicting parallel sync loops.
+// Module-level singletons shared across all hook instances
 let driveInitialized = false;
 let initialLoadDone = false;
 let isSyncing = false;
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 let pollTimer: ReturnType<typeof setInterval> | null = null;
+let pendingSnapshot: Snapshot | null = null; // queued push waiting for auth
 
 export function useDriveSync() {
   const clientId       = useAtomValue(driveClientIdAtom);
@@ -83,29 +68,25 @@ export function useDriveSync() {
     setLastSync(new Date().toISOString());
   }, [setBooks, setComics, setVideoGames, setMovies, setMusic, setCustomTypes, setCustomItems, setLastSync]);
 
-  const pushToDrive = useCallback(async (snapshot: CollectionData & { music: unknown[]; customItems: Record<string, CustomItem[]> }) => {
+  const pushToDrive = useCallback(async (snapshot: Snapshot) => {
     if (!isSignedIn()) {
-      if (!clientId) return;
-      try {
-        await initGoogleDrive(clientId);
-        await signInSilent(clientId, driveUser?.email);
-        setDriveUser(getUser());
-      } catch {
-        console.log("[Drive] pushToDrive skipped: silent re-auth failed");
-        return;
-      }
+      // Queue the snapshot — syncNow (user gesture) will flush it after re-auth
+      pendingSnapshot = snapshot;
+      console.log("[Drive] push queued: not signed in, will flush on next Sync Now");
+      return;
     }
-    console.log("[Drive] pushing to Drive...");
     isSyncing = true;
     try {
       await writeToDrive(snapshot);
+      pendingSnapshot = null;
       console.log("[Drive] push complete");
       setLastSync(new Date().toISOString());
     } finally {
       isSyncing = false;
     }
-  }, [clientId, driveUser, setDriveUser, setLastSync]);
+  }, [setLastSync]);
 
+  // syncNow: re-auth if needed (user gesture = no popup block), flush pending push, then pull
   const syncNow = useCallback(async () => {
     if (!clientId) return;
     if (!isSignedIn()) {
@@ -117,9 +98,14 @@ export function useDriveSync() {
         return;
       }
     }
-    // Pull only — auto-push handles writing local edits to Drive
     isSyncing = true;
     try {
+      // Flush any pending local edits first, then pull
+      if (pendingSnapshot) {
+        await writeToDrive(pendingSnapshot);
+        pendingSnapshot = null;
+        console.log("[Drive] flushed pending snapshot");
+      }
       await loadFromDrive();
       setLastSync(new Date().toISOString());
     } finally {
@@ -131,8 +117,7 @@ export function useDriveSync() {
   useEffect(() => {
     if (!enabled || !clientId || driveInitialized) {
       if (!enabled || !clientId) initialLoadDone = true;
-      // If already initialized, ensure initialLoadDone is eventually set
-      if (driveInitialized) setTimeout(() => { initialLoadDone = true; }, 5000);
+      if (driveInitialized) setTimeout(() => { initialLoadDone = true; }, 3000);
       return;
     }
     driveInitialized = true;
@@ -149,12 +134,11 @@ export function useDriveSync() {
 
   // Debounced auto-push on any collection change
   useEffect(() => {
-    console.log("[Drive] debounce effect — enabled:", enabled, "driveUser:", !!driveUser, "initialLoadDone:", initialLoadDone);
     if (!enabled || !driveUser || !initialLoadDone) return;
-    const snapshot = {
+    const snapshot: Snapshot = {
       books, comics, videoGames, movies, music: music as unknown[],
       customTypes, customItems: customItems as Record<string, CustomItem[]>,
-      version: 1 as const,
+      version: 1,
     };
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
@@ -172,7 +156,7 @@ export function useDriveSync() {
     }
     if (pollTimer) return;
     pollTimer = setInterval(() => {
-      if (!isSyncing && !debounceTimer) loadFromDrive();
+      if (isSignedIn() && !isSyncing && !debounceTimer && !pendingSnapshot) loadFromDrive();
     }, 30000);
     return () => { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } };
   }, [enabled, driveUser, loadFromDrive]);
@@ -191,9 +175,10 @@ export function useDriveSync() {
     setEnabled(false);
     driveInitialized = false;
     initialLoadDone = false;
+    pendingSnapshot = null;
     if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; }
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
   }, [setEnabled, setDriveUser]);
 
-  return { syncNow, connect, disconnect, user: driveUser, lastSync, enabled, signedIn: isSignedIn() };
+  return { syncNow, connect, disconnect, user: driveUser, lastSync, enabled, signedIn: isSignedIn(), hasPending: !!pendingSnapshot };
 }
