@@ -156,7 +156,8 @@ export async function writeToDrive(data: CollectionData & { customItems?: Record
   const body = JSON.stringify(data);
   const blob = new Blob([body], { type: "application/json" });
 
-  if (!_fileId) _fileId = await findFile();
+  // Always re-lookup the file to avoid stale cached ID
+  _fileId = await findFile();
   console.log("[Drive] writing to fileId:", _fileId, "size:", body.length);
 
   try {
