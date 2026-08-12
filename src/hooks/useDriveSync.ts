@@ -18,6 +18,7 @@ type Snapshot = CollectionData & { music: unknown[]; customItems: Record<string,
 let driveInitialized = false;
 let initialLoadDone = false;
 let isSyncing = false;
+let isLoadingFromDrive = false; // suppresses debounce push during Drive reads
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 let pendingSnapshot: Snapshot | null = null; // queued push waiting for auth
@@ -54,9 +55,10 @@ export function useDriveSync() {
   }, [setStatus, setLastSync]);
 
   const loadFromDrive = useCallback(async () => {
+    isLoadingFromDrive = true;
     const data = await readFromDrive();
     initialLoadDone = true;
-    if (!data) return;
+    if (!data) { isLoadingFromDrive = false; return; }
     if (Array.isArray(data.books))      setBooks(data.books);
     if (Array.isArray(data.comics))     setComics(data.comics);
     if (Array.isArray(data.videoGames)) setVideoGames(data.videoGames);
@@ -66,6 +68,8 @@ export function useDriveSync() {
     if (Array.isArray(data.customTypes)) setCustomTypes(data.customTypes);
     if (data.customItems && typeof data.customItems === "object") setCustomItems(data.customItems as Record<string, CustomItem[]>);
     setLastSync(new Date().toISOString());
+    // Clear flag after React has flushed the atom updates
+    setTimeout(() => { isLoadingFromDrive = false; }, 100);
   }, [setBooks, setComics, setVideoGames, setMovies, setMusic, setCustomTypes, setCustomItems, setLastSync]);
 
   const pushToDrive = useCallback(async (snapshot: Snapshot) => {
@@ -134,7 +138,7 @@ export function useDriveSync() {
 
   // Debounced auto-push on any collection change
   useEffect(() => {
-    if (!enabled || !driveUser || !initialLoadDone) return;
+    if (!enabled || !driveUser || !initialLoadDone || isLoadingFromDrive) return;
     const snapshot: Snapshot = {
       books, comics, videoGames, movies, music: music as unknown[],
       customTypes, customItems: customItems as Record<string, CustomItem[]>,
@@ -175,6 +179,7 @@ export function useDriveSync() {
     setEnabled(false);
     driveInitialized = false;
     initialLoadDone = false;
+    isLoadingFromDrive = false;
     pendingSnapshot = null;
     if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; }
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
