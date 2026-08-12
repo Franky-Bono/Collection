@@ -66,6 +66,7 @@ export const driveUserAtom = atom<{ name: string; email: string } | null>(null);
 export const appPasswordHashAtom = atomWithStorage<string>("collection-password-hash", "");
 
 export interface MovieColumnSetting { key: string; visible: boolean; }
+
 export const DEFAULT_MOVIE_COLUMNS: MovieColumnSetting[] = [
   { key: "year",      visible: true  },
   { key: "director",  visible: true  },
@@ -83,4 +84,59 @@ export const DEFAULT_MOVIE_COLUMNS: MovieColumnSetting[] = [
 export const movieColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
   "collection-movie-columns",
   DEFAULT_MOVIE_COLUMNS,
+);
+
+export const DEFAULT_BOOK_COLUMNS: MovieColumnSetting[] = [
+  { key: "author",   visible: true  },
+  { key: "genre",    visible: true  },
+  { key: "year",     visible: true  },
+  { key: "language", visible: true  },
+  { key: "format",   visible: true  },
+  { key: "status",   visible: true  },
+  { key: "rating",   visible: true  },
+  { key: "notes",    visible: false },
+];
+export const bookColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
+  "collection-book-columns",
+  DEFAULT_BOOK_COLUMNS,
+);
+
+export const DEFAULT_COMIC_COLUMNS: MovieColumnSetting[] = [
+  { key: "editor",    visible: true },
+  { key: "series",    visible: true },
+  { key: "issue",     visible: true },
+  { key: "year",      visible: true },
+  { key: "condition", visible: true },
+  { key: "status",    visible: true },
+  { key: "rating",    visible: true },
+];
+export const comicColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
+  "collection-comic-columns",
+  DEFAULT_COMIC_COLUMNS,
+);
+
+export const DEFAULT_VIDEOGAME_COLUMNS: MovieColumnSetting[] = [
+  { key: "studio",   visible: true },
+  { key: "genre",    visible: true },
+  { key: "year",     visible: true },
+  { key: "platform", visible: true },
+  { key: "status",   visible: true },
+  { key: "rating",   visible: true },
+];
+export const videoGameColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
+  "collection-videogame-columns",
+  DEFAULT_VIDEOGAME_COLUMNS,
+);
+
+export const DEFAULT_MUSIC_COLUMNS: MovieColumnSetting[] = [
+  { key: "artist",  visible: true },
+  { key: "genre",   visible: true },
+  { key: "year",    visible: true },
+  { key: "format",  visible: true },
+  { key: "status",  visible: true },
+  { key: "rating",  visible: true },
+];
+export const musicColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
+  "collection-music-columns",
+  DEFAULT_MUSIC_COLUMNS,
 );
