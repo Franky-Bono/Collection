@@ -97,23 +97,21 @@ export function useDriveSync() {
         return;
       }
     }
-    // Pull from Drive first, then push local state (manual or re-auth)
+    // Pull only — auto-push handles writing local edits to Drive
     isSyncingRef.current = true;
     try {
       await loadFromDrive();
-      const data = readLocalAll();
-      await writeToDrive(data);
       setLastSync(new Date().toISOString());
     } finally {
       isSyncingRef.current = false;
     }
   }, [clientId, setDriveUser, loadFromDrive, setLastSync]);
 
-  const pushToDrive = useCallback(async () => {
+  const pushToDrive = useCallback(async (snapshot?: CollectionData & { music: unknown[]; customItems: Record<string, CustomItem[]> }) => {
     if (!isSignedIn()) return;
     isSyncingRef.current = true;
     try {
-      const data = readLocalAll();
+      const data = snapshot ?? readLocalAll();
       await writeToDrive(data);
       setLastSync(new Date().toISOString());
     } finally {
@@ -137,10 +135,18 @@ export function useDriveSync() {
   }, [enabled, clientId, loadFromDrive, setDriveUser]);
 
   useEffect(() => {
-    if (!enabled || !isSignedIn() || !initialLoadDoneRef.current || isSyncingRef.current) return;
+    if (!enabled || !isSignedIn() || !initialLoadDoneRef.current) return;
+    const snapshot = {
+      books, comics, videoGames, movies, music: music as unknown[],
+      customTypes, customItems: customItems as Record<string, CustomItem[]>,
+      version: 1 as const,
+    };
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => { pushToDrive(); }, 2000);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    debounceRef.current = setTimeout(() => {
+      debounceRef.current = null;
+      pushToDrive(snapshot);
+    }, 2000);
+    return () => { if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null; } };
   }, [books, comics, videoGames, movies, music, customTypes, customItems, enabled, pushToDrive]);
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
