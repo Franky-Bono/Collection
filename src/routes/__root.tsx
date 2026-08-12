@@ -3,6 +3,7 @@ import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { useAtomValue } from "jotai";
 import { sidebarCollapsedAtom } from "@/state/atoms";
+import { useDriveSync } from "@/hooks/useDriveSync";
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -11,6 +12,7 @@ export const Route = createRootRoute({
 function RootLayout() {
   const collapsed = useAtomValue(sidebarCollapsedAtom);
   const sidebarWidth = collapsed ? 60 : 240;
+  useDriveSync();
 
   return (
     <AppShell
