@@ -14,7 +14,36 @@ export const Route = createFileRoute("/import")({
   component: ImportPage,
 });
 
+import type { TranslationKey } from "@/i18n/translations";
+
 type CollectionKind = "books" | "comics" | "videogames" | "movies" | "music";
+
+const FIELD_LABEL_KEY: Record<string, TranslationKey> = {  title:     "col_title",
+  author:    "col_author",
+  artist:    "col_artist",
+  editor:    "col_editor",
+  studio:    "col_studio",
+  director:  "col_director",
+  genre:     "col_genre",
+  country:   "col_country",
+  quality:   "col_quality",
+  edition:   "col_edition",
+  year:      "col_year",
+  status:    "col_status",
+  rating:    "col_rating",
+  format:    "col_format",
+  platform:  "col_platform",
+  series:    "col_series",
+  issue:     "col_issue",
+  publisher: "col_publisher",
+  condition: "col_condition",
+  label:     "col_label",
+  pages:     "col_pages",
+  duration:  "col_duration",
+  location:  "col_location",
+  notes:     "col_notes",
+  language:  "col_language",
+};
 
 const FIELD_OPTIONS: Record<CollectionKind, string[]> = {
   books:      ["title", "author", "genre", "year", "format", "language", "status", "rating", "notes", "edition", "pages", "publisher", "location"],
@@ -160,7 +189,11 @@ function ImportPage() {
                     size="xs"
                     value={mapping[h] ?? ""}
                     onChange={(v) => setMapping({ ...mapping, [h]: v ?? "" })}
-                    data={[{ value: "", label: t("import_skip") }, ...FIELD_OPTIONS[kind].map((f) => ({ value: f, label: f }))]}
+                    data={[{ value: "", label: t("import_skip") }, ...FIELD_OPTIONS[kind].map((f) => {
+                      const raw = FIELD_LABEL_KEY[f] ? t(FIELD_LABEL_KEY[f]) : f;
+                      const label = raw.charAt(0).toUpperCase() + raw.slice(1);
+                      return { value: f, label };
+                    })]}
                     style={{ flex: 1 }}
                     clearable
                   />
