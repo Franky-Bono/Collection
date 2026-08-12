@@ -1,12 +1,12 @@
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
-import { MantineProvider, ColorSchemeScript } from "@mantine/core";
+import { MantineProvider, ColorSchemeScript, useMantineColorScheme } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { theme } from "@/styles/theme";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { useAtomValue } from "jotai";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { colorSchemeAtom, appPasswordHashAtom } from "@/state/atoms";
 import { LockScreen } from "@/components/auth/LockScreen";
 
@@ -20,11 +20,19 @@ function AppInner() {
   return <RouterProvider router={router} />;
 }
 
+function ColorSchemeSync() {
+  const colorScheme = useAtomValue(colorSchemeAtom);
+  const { setColorScheme } = useMantineColorScheme();
+  useEffect(() => { setColorScheme(colorScheme); }, [colorScheme]);
+  return null;
+}
+
 export default function App() {
   const colorScheme = useAtomValue(colorSchemeAtom);
   return (
-    <MantineProvider theme={theme} forceColorScheme={colorScheme}>
-      <ColorSchemeScript forceColorScheme={colorScheme} />
+    <MantineProvider theme={theme} defaultColorScheme={colorScheme}>
+      <ColorSchemeScript defaultColorScheme={colorScheme} />
+      <ColorSchemeSync />
       <Notifications />
       <AppInner />
     </MantineProvider>

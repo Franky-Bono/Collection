@@ -20,7 +20,7 @@ import { IconDownload, IconPlus, IconRefresh, IconTrash, IconUpload } from "@tab
 import { useMantineColorScheme } from "@mantine/core";
 import { exportJSON, importJSON } from "@/storage";
 import { useAtom, useAtomValue } from "jotai";
-import { booksAtom, comicsAtom, moviesAtom, musicAtom, videoGamesAtom, languageAtom, customTypesAtom, customItemsAtom, driveClientIdAtom, driveSyncStatusAtom, driveLastSyncAtom, appPasswordHashAtom, thousandSeparatorAtom, dateFormatAtom } from "@/state/atoms";
+import { booksAtom, comicsAtom, moviesAtom, musicAtom, videoGamesAtom, languageAtom, colorSchemeAtom, customTypesAtom, customItemsAtom, driveClientIdAtom, driveSyncStatusAtom, driveLastSyncAtom, appPasswordHashAtom, thousandSeparatorAtom, dateFormatAtom } from "@/state/atoms";
 import type { CollectionData, CustomCollectionType } from "@/types";
 import { useT } from "@/i18n/useT";
 import type { Language } from "@/i18n/translations";
@@ -34,6 +34,7 @@ export function SettingsPage() {
   const t = useT();
   const navigate = useNavigate();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const [, setColorSchemeAtom] = useAtom(colorSchemeAtom);
   const [language, setLanguage] = useAtom(languageAtom);
   const [thousandSep, setThousandSep] = useAtom(thousandSeparatorAtom);
   const [dateFormat, setDateFormat] = useAtom(dateFormatAtom);
@@ -168,7 +169,7 @@ export function SettingsPage() {
               </Stack>
               <Switch
                 checked={colorScheme === "dark"}
-                onChange={() => toggleColorScheme()}
+                onChange={() => { toggleColorScheme(); setColorSchemeAtom(colorScheme === "dark" ? "light" : "dark"); }}
                 size="md"
               />
             </Group>
