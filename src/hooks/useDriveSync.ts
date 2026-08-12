@@ -126,7 +126,7 @@ export function useDriveSync() {
     driveInitialized = true;
     initGoogleDrive(clientId).then(async () => {
       try {
-        await signInSilent(clientId);
+        await signInSilent(clientId, driveUser?.email);
         setDriveUser(getUser());
         await loadFromDrive();
       } catch {

@@ -61,7 +61,7 @@ export const driveClientIdAtom = atomWithStorage<string>("collection-drive-clien
 export const driveSyncEnabledAtom = atomWithStorage<boolean>("collection-drive-enabled", false);
 export const driveLastSyncAtom = atomWithStorage<string | null>("collection-drive-last-sync", null);
 export const driveSyncStatusAtom = atom<"idle" | "syncing" | "error">("idle");
-export const driveUserAtom = atom<{ name: string; email: string } | null>(null);
+export const driveUserAtom = atomWithStorage<{ name: string; email: string } | null>("collection-drive-user", null);
 
 export const appPasswordHashAtom = atomWithStorage<string>("collection-password-hash", "");
 

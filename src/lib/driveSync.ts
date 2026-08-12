@@ -77,13 +77,14 @@ export function signIn(): Promise<void> {
   });
 }
 
-export function signInSilent(clientId: string): Promise<void> {
+export function signInSilent(clientId: string, hint?: string): Promise<void> {
   return new Promise((resolve, reject) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const client = (window as unknown as any).google.accounts.oauth2.initTokenClient({
       client_id: clientId,
       scope: SCOPES,
       prompt: "",
+      login_hint: hint ?? "",
       callback: (resp: { access_token?: string; error?: string }) => {
         if (resp.error || !resp.access_token) { reject(new Error(resp.error ?? "silent auth failed")); return; }
         _accessToken = resp.access_token;
