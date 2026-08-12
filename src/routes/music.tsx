@@ -5,6 +5,7 @@ import { musicAtom, musicColumnsAtom } from "@/state/atoms";
 import type { MusicAlbum } from "@/types";
 import { useT } from "@/i18n/useT";
 import { useAtom } from "jotai";
+import { Text } from "@mantine/core";
 
 export const Route = createFileRoute("/music")({
   component: MusicPage,
@@ -21,6 +22,7 @@ function MusicPage() {
     { key: "format",  label: t("col_format"),  width: 110, render: (item: MusicAlbum) => <FormatBadge value={item.format} />, getSearchValue: (item: MusicAlbum) => getFormatLabel(item.format ?? "", t) },
     { key: "status",  label: t("col_status"),  width: 120, render: (item: MusicAlbum) => <StatusBadge value={item.status} />, getSearchValue: (item: MusicAlbum) => getStatusLabel(item.status ?? "", t) },
     { key: "rating",  label: t("col_rating"),  width: 90  },
+    { key: "notes",   label: t("col_notes"),   width: 160, render: (item: MusicAlbum) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
   ] as const;
 
   const columns = musicColumns

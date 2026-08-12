@@ -5,6 +5,7 @@ import { comicsAtom, comicColumnsAtom } from "@/state/atoms";
 import type { Comic } from "@/types";
 import { useT } from "@/i18n/useT";
 import { useAtom } from "jotai";
+import { Text } from "@mantine/core";
 
 export const Route = createFileRoute("/comics")({
   component: ComicsPage,
@@ -22,6 +23,7 @@ function ComicsPage() {
     { key: "condition", label: t("col_condition"), width: 110, render: (item: Comic) => <StatusBadge value={item.condition} />, getSearchValue: (item: Comic) => getStatusLabel(item.condition ?? "", t) },
     { key: "status",    label: t("col_status"),    width: 120, render: (item: Comic) => <StatusBadge value={item.status} />, getSearchValue: (item: Comic) => getStatusLabel(item.status ?? "", t) },
     { key: "rating",    label: t("col_rating"),    width: 90  },
+    { key: "notes",     label: t("col_notes"),     width: 160, render: (item: Comic) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
   ] as const;
 
   const columns = comicColumns

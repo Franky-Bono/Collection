@@ -5,6 +5,7 @@ import { videoGamesAtom, videoGameColumnsAtom } from "@/state/atoms";
 import type { VideoGame } from "@/types";
 import { useT } from "@/i18n/useT";
 import { useAtom } from "jotai";
+import { Text } from "@mantine/core";
 
 export const Route = createFileRoute("/videogames")({
   component: VideoGamesPage,
@@ -21,6 +22,7 @@ function VideoGamesPage() {
     { key: "platform", label: t("col_platform"), width: 120 },
     { key: "status",   label: t("col_status"),   width: 120, render: (item: VideoGame) => <StatusBadge value={item.status} />, getSearchValue: (item: VideoGame) => getStatusLabel(item.status ?? "", t) },
     { key: "rating",   label: t("col_rating"),   width: 90  },
+    { key: "notes",    label: t("col_notes"),    width: 160, render: (item: VideoGame) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
   ] as const;
 
   const columns = videoGameColumns

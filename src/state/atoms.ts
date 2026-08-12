@@ -102,13 +102,14 @@ export const bookColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
 );
 
 export const DEFAULT_COMIC_COLUMNS: MovieColumnSetting[] = [
-  { key: "editor",    visible: true },
-  { key: "series",    visible: true },
-  { key: "issue",     visible: true },
-  { key: "year",      visible: true },
-  { key: "condition", visible: true },
-  { key: "status",    visible: true },
-  { key: "rating",    visible: true },
+  { key: "editor",    visible: true  },
+  { key: "series",    visible: true  },
+  { key: "issue",     visible: true  },
+  { key: "year",      visible: true  },
+  { key: "condition", visible: true  },
+  { key: "status",    visible: true  },
+  { key: "rating",    visible: true  },
+  { key: "notes",     visible: false },
 ];
 export const comicColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
   "collection-comic-columns",
@@ -116,12 +117,13 @@ export const comicColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
 );
 
 export const DEFAULT_VIDEOGAME_COLUMNS: MovieColumnSetting[] = [
-  { key: "studio",   visible: true },
-  { key: "genre",    visible: true },
-  { key: "year",     visible: true },
-  { key: "platform", visible: true },
-  { key: "status",   visible: true },
-  { key: "rating",   visible: true },
+  { key: "studio",   visible: true  },
+  { key: "genre",    visible: true  },
+  { key: "year",     visible: true  },
+  { key: "platform", visible: true  },
+  { key: "status",   visible: true  },
+  { key: "rating",   visible: true  },
+  { key: "notes",    visible: false },
 ];
 export const videoGameColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
   "collection-videogame-columns",
@@ -129,12 +131,13 @@ export const videoGameColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
 );
 
 export const DEFAULT_MUSIC_COLUMNS: MovieColumnSetting[] = [
-  { key: "artist",  visible: true },
-  { key: "genre",   visible: true },
-  { key: "year",    visible: true },
-  { key: "format",  visible: true },
-  { key: "status",  visible: true },
-  { key: "rating",  visible: true },
+  { key: "artist",  visible: true  },
+  { key: "genre",   visible: true  },
+  { key: "year",    visible: true  },
+  { key: "format",  visible: true  },
+  { key: "status",  visible: true  },
+  { key: "rating",  visible: true  },
+  { key: "notes",   visible: false },
 ];
 export const musicColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
   "collection-music-columns",
