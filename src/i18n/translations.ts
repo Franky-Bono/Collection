@@ -221,6 +221,7 @@ const translations = {
     import_preview: "Preview (first {count} rows)",
     import_btn: "Import {count} items",
     import_success: "Imported {count} items",
+    import_error_quota: "Storage full. Free up space by exporting and deleting some items before importing.",
 
     // Danger zone
     settings_danger_title: "Danger zone",
@@ -487,6 +488,7 @@ const translations = {
     import_preview: "Aperçu (premières {count} lignes)",
     import_btn: "Importer {count} éléments",
     import_success: "{count} éléments importés",
+    import_error_quota: "Stockage plein. Libérez de l'espace en exportant et supprimant des éléments avant d'importer.",
 
     // Danger zone
     settings_danger_title: "Zone de danger",
