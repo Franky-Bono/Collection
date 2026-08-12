@@ -29,6 +29,7 @@ import { NewCollectionTypeModal } from "@/components/collection/NewCollectionTyp
 import { useNavigate } from "@tanstack/react-router";
 import { useDriveSync } from "@/hooks/useDriveSync";
 import { formatDate } from "@/hooks/useFormatting";
+import dayjs from "dayjs";
 
 export function SettingsPage() {
   const t = useT();
@@ -318,7 +319,7 @@ export function SettingsPage() {
                 <Stack gap={2}>
                   <Text size="sm" fw={500}>{driveUser?.email ?? t("settings_drive_connected")}</Text>
                   <Text size="xs" c="dimmed">
-                    {lastSync ? `${t("settings_drive_last_sync")} ${formatDate(lastSync, dateFormat)}` : t("settings_drive_not_synced")}
+                    {lastSync ? `${t("settings_drive_last_sync")} ${formatDate(lastSync, dateFormat)} ${dayjs(lastSync).format("HH:mm:ss")}` : t("settings_drive_not_synced")}
                   </Text>
                 </Stack>
                 <Group gap="xs">

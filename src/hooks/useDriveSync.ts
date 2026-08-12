@@ -57,6 +57,9 @@ export function useDriveSync() {
   const customItems = useAtomValue(customItemsAtom);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Stays false until the initial Drive load completes; prevents writing empty
+  // local state back to Drive before the read finishes.
+  const initialLoadDoneRef = useRef(false);
 
   useEffect(() => {
     setStatusListener((s) => {
@@ -77,14 +80,25 @@ export function useDriveSync() {
     if (Array.isArray(data.customTypes)) setCustomTypes(data.customTypes);
     if (data.customItems && typeof data.customItems === "object") setCustomItems(data.customItems as Record<string, CustomItem[]>);
     setLastSync(new Date().toISOString());
+    initialLoadDoneRef.current = true;
   }, [setBooks, setComics, setVideoGames, setMovies, setMusic, setCustomTypes, setCustomItems, setLastSync]);
 
   const syncNow = useCallback(async () => {
-    if (!isSignedIn()) return;
+    if (!clientId) return;
+    if (!isSignedIn()) {
+      try {
+        await initGoogleDrive(clientId);
+        await signIn();
+        setDriveUser(getUser());
+      } catch {
+        return;
+      }
+    }
+    await loadFromDrive();
     const data = readLocalAll();
     await writeToDrive(data);
     setLastSync(new Date().toISOString());
-  }, [setLastSync]);
+  }, [clientId, setDriveUser, loadFromDrive, setLastSync]);
 
   useEffect(() => {
     if (!enabled || !clientId || driveInitialized) return;
@@ -96,12 +110,13 @@ export function useDriveSync() {
         await loadFromDrive();
       } catch {
         // Silent sign-in failed — user must click Connect manually
+        initialLoadDoneRef.current = true;
       }
-    }).catch(() => {});
+    }).catch(() => { initialLoadDoneRef.current = true; });
   }, [enabled, clientId, loadFromDrive, setDriveUser]);
 
   useEffect(() => {
-    if (!enabled || !isSignedIn()) return;
+    if (!enabled || !isSignedIn() || !initialLoadDoneRef.current) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => { syncNow(); }, 2000);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
@@ -120,6 +135,7 @@ export function useDriveSync() {
     setDriveUser(null);
     setEnabled(false);
     driveInitialized = false;
+    initialLoadDoneRef.current = false;
   }, [setEnabled, setDriveUser]);
 
   return { syncNow, connect, disconnect, user: driveUser, lastSync, enabled };

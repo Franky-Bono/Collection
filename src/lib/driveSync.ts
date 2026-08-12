@@ -1,6 +1,6 @@
 import type { CollectionData } from "@/types";
 
-const SCOPES = "https://www.googleapis.com/auth/drive.file";
+const SCOPES = "https://www.googleapis.com/auth/drive.appdata";
 const FILE_NAME = "collection-data.json";
 const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest";
 
@@ -120,7 +120,7 @@ export function getUser(): { name: string; email: string } | null {
 
 async function findFile(): Promise<string | null> {
   const resp = await fetch(
-    `https://www.googleapis.com/drive/v3/files?q=name='${FILE_NAME}'+and+trashed=false&fields=files(id,name)`,
+    `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='${FILE_NAME}'&fields=files(id,name)`,
     { headers: { Authorization: `Bearer ${_accessToken}` } }
   );
   const data = await resp.json() as { files: { id: string }[] };
@@ -163,7 +163,7 @@ export async function writeToDrive(data: CollectionData & { customItems?: Record
         { method: "PATCH", headers: { Authorization: `Bearer ${_accessToken}`, "Content-Type": "application/json" }, body: blob }
       );
     } else {
-      const meta = JSON.stringify({ name: FILE_NAME, mimeType: "application/json" });
+      const meta = JSON.stringify({ name: FILE_NAME, mimeType: "application/json", parents: ["appDataFolder"] });
       const form = new FormData();
       form.append("metadata", new Blob([meta], { type: "application/json" }));
       form.append("file", blob);
