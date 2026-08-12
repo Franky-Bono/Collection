@@ -145,6 +145,7 @@ const translations = {
     delete_message: "Are you sure you want to delete {title}? This cannot be undone.",
     delete_confirm: "Delete",
     delete_cancel: "Cancel",
+    filter_reset: "Clear filters",
 
     // Notifications
     notif_added: "Added \"{title}\"",
@@ -415,6 +416,7 @@ const translations = {
     delete_message: "Voulez-vous vraiment supprimer {title} ? Cette action est irréversible.",
     delete_confirm: "Supprimer",
     delete_cancel: "Annuler",
+    filter_reset: "Effacer les filtres",
 
     // Notifications
     notif_added: "\"{title}\" ajouté",

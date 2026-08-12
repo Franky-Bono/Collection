@@ -323,7 +323,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
         <Group gap="xs">
           {hasFilters && (
             <Button size="xs" variant="subtle" onClick={() => setColumnFilters({})}>
-              {t("delete_cancel")}
+              {t("filter_reset" as TranslationKey)}
             </Button>
           )}
           {columnSettings && setColumnSettings && allColumnDefs && (
