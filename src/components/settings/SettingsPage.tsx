@@ -79,7 +79,7 @@ export function SettingsPage() {
   const syncStatus = useAtomValue(driveSyncStatusAtom);
   const lastSync = useAtomValue(driveLastSyncAtom);
   const hasPending = useAtomValue(drivePendingAtom);
-  const { connect, disconnect, syncNow, resetDriveFile, user: driveUser, enabled: driveEnabled, signedIn: driveSignedIn } = useDriveSync();
+  const { connect, disconnect, syncNow, user: driveUser, enabled: driveEnabled, signedIn: driveSignedIn } = useDriveSync();
 
   const handleNewType = (type: CustomCollectionType) => {
     setCustomTypes([...customTypes, type]);
@@ -327,9 +327,6 @@ export function SettingsPage() {
                 <Group gap="xs">
                   <Button size="xs" variant="default" leftSection={<IconRefresh size={13} />} onClick={syncNow} loading={syncStatus === "syncing"}>
                     {t("settings_drive_sync_now")}
-                  </Button>
-                  <Button size="xs" color="orange" variant="subtle" onClick={resetDriveFile} loading={syncStatus === "syncing"}>
-                    Reset Drive File
                   </Button>
                   <Button size="xs" color="red" variant="subtle" onClick={disconnect}>
                     {t("settings_drive_disconnect")}

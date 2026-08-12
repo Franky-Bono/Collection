@@ -140,21 +140,19 @@ export function getUser(): { name: string; email: string } | null {
 
 async function findFile(): Promise<string | null> {
   const resp = await fetch(
-    `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='${FILE_NAME}'&fields=files(id,name,size,modifiedTime)`,
+    `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='${FILE_NAME}'&fields=files(id,name)`,
     { headers: { Authorization: `Bearer ${_accessToken}` } }
   );
-  const data = await resp.json() as { files: { id: string; size?: string; modifiedTime?: string }[] };
-  console.log("[Drive] findFile results:", JSON.stringify(data.files));
+  const data = await resp.json() as { files: { id: string }[] };
   return data.files?.[0]?.id ?? null;
 }
 
 export async function readFromDrive(): Promise<(CollectionData & { customItems?: Record<string, unknown[]> }) | null> {
-  if (!_accessToken || !_gapiReady) { console.log("[Drive] readFromDrive skipped: not signed in or GAPI not ready"); return null; }
+  if (!_accessToken || !_gapiReady) return null;
   setStatus("syncing");
   try {
     _fileId = await findFile();
-    if (!_fileId) { console.log("[Drive] readFromDrive: no file found"); setStatus("idle"); return null; }
-    console.log("[Drive] reading fileId:", _fileId);
+    if (!_fileId) { setStatus("idle"); return null; }
     const resp = await fetch(
       `https://www.googleapis.com/drive/v3/files/${_fileId}?alt=media`,
       { headers: { Authorization: `Bearer ${_accessToken}` } }
@@ -175,9 +173,7 @@ export async function writeToDrive(data: CollectionData & { customItems?: Record
   const body = JSON.stringify(data);
   const blob = new Blob([body], { type: "application/json" });
 
-  // Always re-lookup the file to avoid stale cached ID
   _fileId = await findFile();
-  console.log("[Drive] writing to fileId:", _fileId, "size:", body.length);
 
   try {
     if (_fileId) {

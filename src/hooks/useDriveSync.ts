@@ -77,7 +77,6 @@ export function useDriveSync() {
     if (!isSignedIn()) {
       pendingSnapshot = snapshot;
       setPending(true);
-      console.log("[Drive] push queued: not signed in, will flush on next Sync Now");
       return;
     }
     isSyncing = true;
@@ -85,10 +84,9 @@ export function useDriveSync() {
       await writeToDrive(snapshot);
       pendingSnapshot = null;
       setPending(false);
-      console.log("[Drive] push complete");
       setLastSync(new Date().toISOString());
-    } catch (e) {
-      console.error("[Drive] push failed:", e);
+    } catch {
+      // push failed silently — will retry on next Sync Now
     } finally {
       isSyncing = false;
     }
@@ -108,19 +106,17 @@ export function useDriveSync() {
     }
     isSyncing = true;
     try {
-      // Flush any pending local edits first, then pull
       if (pendingSnapshot) {
         await writeToDrive(pendingSnapshot);
         pendingSnapshot = null;
         setPending(false);
-        console.log("[Drive] flushed pending snapshot");
       }
       await loadFromDrive();
       setLastSync(new Date().toISOString());
     } finally {
       isSyncing = false;
     }
-  }, [clientId, setDriveUser, loadFromDrive, setLastSync]);
+  }, [clientId, setDriveUser, loadFromDrive, setLastSync, setPending]);
 
   // Initial auth + load
   useEffect(() => {
@@ -186,7 +182,6 @@ export function useDriveSync() {
     await writeToDrive(snapshot);
     setPending(false);
     setLastSync(new Date().toISOString());
-    console.log("[Drive] reset complete — new file created in appDataFolder");
   }, [clientId, setDriveUser, books, comics, videoGames, movies, music, customTypes, customItems, setPending, setLastSync]);
 
   const connect = useCallback(async (id: string) => {
