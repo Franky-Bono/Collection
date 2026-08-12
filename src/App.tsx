@@ -3,14 +3,14 @@ import "@mantine/notifications/styles.css";
 import { MantineProvider, ColorSchemeScript, useMantineColorScheme } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { theme } from "@/styles/theme";
-import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { RouterProvider, createRouter, createHashHistory } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { useAtomValue } from "jotai";
 import { useState, useEffect } from "react";
 import { colorSchemeAtom, appPasswordHashAtom } from "@/state/atoms";
 import { LockScreen } from "@/components/auth/LockScreen";
 
-const router = createRouter({ routeTree });
+const router = createRouter({ routeTree, history: createHashHistory() });
 
 function AppInner() {
   const passwordHash = useAtomValue(appPasswordHashAtom);
