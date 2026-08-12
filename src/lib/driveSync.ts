@@ -159,10 +159,15 @@ export async function writeToDrive(data: CollectionData & { customItems?: Record
     if (!_fileId) _fileId = await findFile();
 
     if (_fileId) {
-      await fetch(
+      const resp = await fetch(
         `https://www.googleapis.com/upload/drive/v3/files/${_fileId}?uploadType=media`,
         { method: "PATCH", headers: { Authorization: `Bearer ${_accessToken}`, "Content-Type": "application/json" }, body: blob }
       );
+      if (!resp.ok) {
+        // File may no longer exist — clear cached ID and create fresh
+        _fileId = null;
+        throw new Error(`PATCH failed: ${resp.status}`);
+      }
     } else {
       const meta = JSON.stringify({ name: FILE_NAME, mimeType: "application/json", parents: ["appDataFolder"] });
       const form = new FormData();
@@ -172,6 +177,7 @@ export async function writeToDrive(data: CollectionData & { customItems?: Record
         "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id",
         { method: "POST", headers: { Authorization: `Bearer ${_accessToken}` }, body: form }
       );
+      if (!resp.ok) throw new Error(`POST failed: ${resp.status}`);
       const created = await resp.json() as { id: string };
       _fileId = created.id;
     }

@@ -87,6 +87,8 @@ export function useDriveSync() {
       setPending(false);
       console.log("[Drive] push complete");
       setLastSync(new Date().toISOString());
+    } catch (e) {
+      console.error("[Drive] push failed:", e);
     } finally {
       isSyncing = false;
     }
