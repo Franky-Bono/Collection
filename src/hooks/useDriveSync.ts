@@ -97,6 +97,7 @@ export function useDriveSync() {
         return;
       }
     }
+    // Pull from Drive first, then push local state (manual or re-auth)
     isSyncingRef.current = true;
     try {
       await loadFromDrive();
@@ -107,6 +108,18 @@ export function useDriveSync() {
       isSyncingRef.current = false;
     }
   }, [clientId, setDriveUser, loadFromDrive, setLastSync]);
+
+  const pushToDrive = useCallback(async () => {
+    if (!isSignedIn()) return;
+    isSyncingRef.current = true;
+    try {
+      const data = readLocalAll();
+      await writeToDrive(data);
+      setLastSync(new Date().toISOString());
+    } finally {
+      isSyncingRef.current = false;
+    }
+  }, [setLastSync]);
 
   useEffect(() => {
     if (!enabled || !clientId || driveInitialized) return;
@@ -126,9 +139,9 @@ export function useDriveSync() {
   useEffect(() => {
     if (!enabled || !isSignedIn() || !initialLoadDoneRef.current || isSyncingRef.current) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => { syncNow(); }, 2000);
+    debounceRef.current = setTimeout(() => { pushToDrive(); }, 2000);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [books, comics, videoGames, movies, music, customTypes, customItems, enabled, syncNow]);
+  }, [books, comics, videoGames, movies, music, customTypes, customItems, enabled, pushToDrive]);
 
   const connect = useCallback(async (id: string) => {
     await initGoogleDrive(id);
