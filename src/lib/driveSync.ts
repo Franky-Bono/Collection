@@ -101,6 +101,25 @@ export function signInSilent(clientId: string, hint?: string): Promise<void> {
   });
 }
 
+export async function deleteAllDriveFiles(): Promise<void> {
+  if (!_accessToken) return;
+  // List ALL files including non-appdata to find stale files
+  const resp = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=name='${FILE_NAME}'+and+trashed=false&fields=files(id,name,parents)`,
+    { headers: { Authorization: `Bearer ${_accessToken}` } }
+  );
+  const data = await resp.json() as { files: { id: string; name: string; parents?: string[] }[] };
+  console.log("[Drive] all matching files:", JSON.stringify(data.files));
+  for (const file of data.files ?? []) {
+    const del = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${_accessToken}` },
+    });
+    console.log("[Drive] deleted file:", file.id, "status:", del.status);
+  }
+  _fileId = null;
+}
+
 export function signOut(): void {
   if (_accessToken) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

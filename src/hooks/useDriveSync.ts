@@ -8,7 +8,7 @@ import {
 } from "@/state/atoms";
 import {
   initGoogleDrive, signIn, signInSilent, signOut, isSignedIn, getUser,
-  readFromDrive, writeToDrive, setStatusListener,
+  readFromDrive, writeToDrive, deleteAllDriveFiles, setStatusListener,
 } from "@/lib/driveSync";
 import type { CollectionData, CustomItem } from "@/types";
 
@@ -170,6 +170,25 @@ export function useDriveSync() {
     return () => { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } };
   }, [enabled, driveUser, loadFromDrive]);
 
+  const resetDriveFile = useCallback(async () => {
+    if (!clientId) return;
+    if (!isSignedIn()) {
+      await initGoogleDrive(clientId);
+      await signIn();
+      setDriveUser(getUser());
+    }
+    await deleteAllDriveFiles();
+    const snapshot: Snapshot = {
+      books, comics, videoGames, movies, music: music as unknown[],
+      customTypes, customItems: customItems as Record<string, CustomItem[]>,
+      version: 1,
+    };
+    await writeToDrive(snapshot);
+    setPending(false);
+    setLastSync(new Date().toISOString());
+    console.log("[Drive] reset complete — new file created in appDataFolder");
+  }, [clientId, setDriveUser, books, comics, videoGames, movies, music, customTypes, customItems, setPending, setLastSync]);
+
   const connect = useCallback(async (id: string) => {
     await initGoogleDrive(id);
     await signIn();
@@ -191,5 +210,5 @@ export function useDriveSync() {
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
   }, [setEnabled, setDriveUser]);
 
-  return { syncNow, connect, disconnect, user: driveUser, lastSync, enabled, signedIn: isSignedIn() };
+  return { syncNow, connect, disconnect, resetDriveFile, user: driveUser, lastSync, enabled, signedIn: isSignedIn() };
 }
