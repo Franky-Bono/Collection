@@ -1,5 +1,5 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import {
   booksAtom, comicsAtom, videoGamesAtom, moviesAtom, musicAtom,
   customTypesAtom, customItemsAtom,
@@ -29,8 +29,13 @@ function readLocalAll(): CollectionData & { music: unknown[]; customItems: Recor
   };
 }
 
-// Module-level flag so navigating away/back doesn't re-trigger silent auth
+// Module-level singletons — shared across all hook instances so SettingsPage
+// and RootLayout don't create conflicting parallel sync loops.
 let driveInitialized = false;
+let initialLoadDone = false;
+let isSyncing = false;
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+let pollTimer: ReturnType<typeof setInterval> | null = null;
 
 export function useDriveSync() {
   const clientId       = useAtomValue(driveClientIdAtom);
@@ -56,14 +61,6 @@ export function useDriveSync() {
   const customTypes = useAtomValue(customTypesAtom);
   const customItems = useAtomValue(customItemsAtom);
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Stays false until the initial Drive load completes; prevents writing empty
-  // local state back to Drive before the read finishes.
-  const initialLoadDoneRef = useRef(false);
-  // Suppresses the debounce watcher while a sync is in progress to prevent
-  // loadFromDrive atom updates from re-triggering another sync.
-  const isSyncingRef = useRef(false);
-
   useEffect(() => {
     setStatusListener((s) => {
       setStatus(s);
@@ -73,7 +70,7 @@ export function useDriveSync() {
 
   const loadFromDrive = useCallback(async () => {
     const data = await readFromDrive();
-    initialLoadDoneRef.current = true;
+    initialLoadDone = true;
     if (!data) return;
     if (Array.isArray(data.books))      setBooks(data.books);
     if (Array.isArray(data.comics))     setComics(data.comics);
@@ -85,6 +82,19 @@ export function useDriveSync() {
     if (data.customItems && typeof data.customItems === "object") setCustomItems(data.customItems as Record<string, CustomItem[]>);
     setLastSync(new Date().toISOString());
   }, [setBooks, setComics, setVideoGames, setMovies, setMusic, setCustomTypes, setCustomItems, setLastSync]);
+
+  const pushToDrive = useCallback(async (snapshot: CollectionData & { music: unknown[]; customItems: Record<string, CustomItem[]> }) => {
+    if (!isSignedIn()) { console.log("[Drive] pushToDrive skipped: not signed in"); return; }
+    console.log("[Drive] pushing to Drive...");
+    isSyncing = true;
+    try {
+      await writeToDrive(snapshot);
+      console.log("[Drive] push complete");
+      setLastSync(new Date().toISOString());
+    } finally {
+      isSyncing = false;
+    }
+  }, [setLastSync]);
 
   const syncNow = useCallback(async () => {
     if (!clientId) return;
@@ -98,29 +108,16 @@ export function useDriveSync() {
       }
     }
     // Pull only — auto-push handles writing local edits to Drive
-    isSyncingRef.current = true;
+    isSyncing = true;
     try {
       await loadFromDrive();
       setLastSync(new Date().toISOString());
     } finally {
-      isSyncingRef.current = false;
+      isSyncing = false;
     }
   }, [clientId, setDriveUser, loadFromDrive, setLastSync]);
 
-  const pushToDrive = useCallback(async (snapshot?: CollectionData & { music: unknown[]; customItems: Record<string, CustomItem[]> }) => {
-    if (!isSignedIn()) { console.log("[Drive] pushToDrive skipped: not signed in"); return; }
-    console.log("[Drive] pushing to Drive...");
-    isSyncingRef.current = true;
-    try {
-      const data = snapshot ?? readLocalAll();
-      await writeToDrive(data);
-      console.log("[Drive] push complete");
-      setLastSync(new Date().toISOString());
-    } finally {
-      isSyncingRef.current = false;
-    }
-  }, [setLastSync]);
-
+  // Initial auth + load
   useEffect(() => {
     if (!enabled || !clientId || driveInitialized) return;
     driveInitialized = true;
@@ -130,42 +127,39 @@ export function useDriveSync() {
         setDriveUser(getUser());
         await loadFromDrive();
       } catch {
-        // Silent sign-in failed — user must click Connect manually
-        initialLoadDoneRef.current = true;
+        initialLoadDone = true;
       }
-    }).catch(() => { initialLoadDoneRef.current = true; });
-  }, [enabled, clientId, loadFromDrive, setDriveUser]);
+    }).catch(() => { initialLoadDone = true; });
+  }, [enabled, clientId, loadFromDrive, setDriveUser, driveUser]);
 
+  // Debounced auto-push on any collection change
   useEffect(() => {
-    console.log("[Drive] debounce effect — enabled:", enabled, "driveUser:", !!driveUser, "initialLoadDone:", initialLoadDoneRef.current);
-    if (!enabled || !driveUser || !initialLoadDoneRef.current) return;
+    console.log("[Drive] debounce effect — enabled:", enabled, "driveUser:", !!driveUser, "initialLoadDone:", initialLoadDone);
+    if (!enabled || !driveUser || !initialLoadDone) return;
     const snapshot = {
       books, comics, videoGames, movies, music: music as unknown[],
       customTypes, customItems: customItems as Record<string, CustomItem[]>,
       version: 1 as const,
     };
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      debounceRef.current = null;
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      debounceTimer = null;
       pushToDrive(snapshot);
     }, 2000);
-    return () => { if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null; } };
+    return () => { if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; } };
   }, [books, comics, videoGames, movies, music, customTypes, customItems, enabled, driveUser, pushToDrive]);
 
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
+  // Poll every 30s to pick up changes from other browsers
   useEffect(() => {
     if (!enabled || !driveUser) {
-      if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
       return;
     }
-    if (pollRef.current) return;
-    pollRef.current = setInterval(() => {
-      if (!isSyncingRef.current && !debounceRef.current) loadFromDrive();
+    if (pollTimer) return;
+    pollTimer = setInterval(() => {
+      if (!isSyncing && !debounceTimer) loadFromDrive();
     }, 30000);
-    return () => {
-      if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
-    };
+    return () => { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } };
   }, [enabled, driveUser, loadFromDrive]);
 
   const connect = useCallback(async (id: string) => {
@@ -181,7 +175,9 @@ export function useDriveSync() {
     setDriveUser(null);
     setEnabled(false);
     driveInitialized = false;
-    initialLoadDoneRef.current = false;
+    initialLoadDone = false;
+    if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; }
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
   }, [setEnabled, setDriveUser]);
 
   return { syncNow, connect, disconnect, user: driveUser, lastSync, enabled, signedIn: isSignedIn() };
