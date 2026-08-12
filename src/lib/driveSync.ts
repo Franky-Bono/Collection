@@ -150,23 +150,22 @@ export async function readFromDrive(): Promise<(CollectionData & { customItems?:
 }
 
 export async function writeToDrive(data: CollectionData & { customItems?: Record<string, unknown[]> }): Promise<void> {
-  if (!_accessToken || !_gapiReady) return;
+  if (!_accessToken || !_gapiReady) throw new Error("Not signed in or GAPI not ready");
   setStatus("syncing");
+  const body = JSON.stringify(data);
+  const blob = new Blob([body], { type: "application/json" });
+
+  if (!_fileId) _fileId = await findFile();
+
   try {
-    const body = JSON.stringify(data);
-    const blob = new Blob([body], { type: "application/json" });
-
-    if (!_fileId) _fileId = await findFile();
-
     if (_fileId) {
       const resp = await fetch(
         `https://www.googleapis.com/upload/drive/v3/files/${_fileId}?uploadType=media`,
         { method: "PATCH", headers: { Authorization: `Bearer ${_accessToken}`, "Content-Type": "application/json" }, body: blob }
       );
       if (!resp.ok) {
-        // File may no longer exist — clear cached ID and create fresh
         _fileId = null;
-        throw new Error(`PATCH failed: ${resp.status}`);
+        throw new Error(`PATCH failed: ${resp.status} ${await resp.text()}`);
       }
     } else {
       const meta = JSON.stringify({ name: FILE_NAME, mimeType: "application/json", parents: ["appDataFolder"] });
@@ -177,12 +176,13 @@ export async function writeToDrive(data: CollectionData & { customItems?: Record
         "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id",
         { method: "POST", headers: { Authorization: `Bearer ${_accessToken}` }, body: form }
       );
-      if (!resp.ok) throw new Error(`POST failed: ${resp.status}`);
+      if (!resp.ok) throw new Error(`POST failed: ${resp.status} ${await resp.text()}`);
       const created = await resp.json() as { id: string };
       _fileId = created.id;
     }
     setStatus("idle");
   } catch (e) {
     setStatus("error", String(e));
+    throw e;
   }
 }
