@@ -3,7 +3,7 @@ import { notifications } from "@mantine/notifications";
 import { IconBarcode, IconChevronDown, IconChevronUp, IconColumns, IconEdit, IconGripVertical, IconPlus, IconSelector, IconTrash, IconX } from "@tabler/icons-react";
 import type { WritableAtom } from "jotai";
 import { useAtom } from "jotai";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { AnyItem } from "@/types";
 import { DeleteConfirm } from "./DeleteConfirm";
@@ -50,8 +50,7 @@ function ColumnsModal({ opened, onClose, settings, allDefs, onChange }: {
   const [draft, setDraft] = useState<MovieColumnSetting[]>(settings);
   const dragIndex = useRef<number | null>(null);
 
-  // Keep draft in sync when modal opens
-  const handleOpen = () => setDraft(settings);
+  useEffect(() => { if (opened) setDraft(settings); }, [opened]);
 
   const toggle = (key: string) =>
     setDraft((prev) => prev.map((s) => s.key === key ? { ...s, visible: !s.visible } : s));
@@ -73,7 +72,7 @@ function ColumnsModal({ opened, onClose, settings, allDefs, onChange }: {
   const getLabel = (key: string) => allDefs.find((d) => d.key === key)?.label ?? key;
 
   return (
-    <Modal opened={opened} onClose={onClose} title={t("col_columns_title" as TranslationKey)} centered size="sm" onTransitionEnd={() => { if (opened) handleOpen(); }}>
+    <Modal opened={opened} onClose={onClose} title={t("col_columns_title" as TranslationKey)} centered size="sm">
       <Stack gap="xs">
         <Text size="xs" c="dimmed">{t("col_columns_hint" as TranslationKey)}</Text>
         {draft.map((s, i) => (
