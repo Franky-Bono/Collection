@@ -26,7 +26,12 @@ function BooksPage() {
     { key: "notes",    label: t("col_notes"),    width: 200, render: (item: Book) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
   ] as const;
 
-  const columns = bookColumns
+  const mergedColumns = [
+    ...bookColumns,
+    ...ALL_COLUMNS.filter(c => !bookColumns.some(s => s.key === c.key)).map(c => ({ key: c.key, visible: false })),
+  ];
+
+  const columns = mergedColumns
     .filter((s) => s.visible)
     .map((s) => ALL_COLUMNS.find((c) => c.key === s.key))
     .filter(Boolean) as typeof ALL_COLUMNS[number][];
@@ -39,7 +44,7 @@ function BooksPage() {
       atom={booksAtom as any}
       kind="books"
       columns={columns as any}
-      columnSettings={bookColumns}
+      columnSettings={mergedColumns}
       allColumnDefs={ALL_COLUMNS.map((c) => ({ key: c.key, label: c.label }))}
       setColumnSettings={setBookColumns}
     />

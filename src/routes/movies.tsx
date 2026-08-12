@@ -30,7 +30,12 @@ function MoviesPage() {
     { key: "notes",     label: t("col_notes"),    width: 160, render: (item: Movie) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
   ] as const;
 
-  const columns = movieColumns
+  const mergedColumns = [
+    ...movieColumns,
+    ...ALL_COLUMNS.filter(c => !movieColumns.some(s => s.key === c.key)).map(c => ({ key: c.key, visible: false })),
+  ];
+
+  const columns = mergedColumns
     .filter((s) => s.visible)
     .map((s) => ALL_COLUMNS.find((c) => c.key === s.key))
     .filter(Boolean) as typeof ALL_COLUMNS[number][];
@@ -44,7 +49,7 @@ function MoviesPage() {
       kind="movies"
       titleWidth={250}
       columns={columns as any}
-      columnSettings={movieColumns}
+      columnSettings={mergedColumns}
       allColumnDefs={ALL_COLUMNS.map((c) => ({ key: c.key, label: c.label }))}
       setColumnSettings={setMovieColumns}
     />

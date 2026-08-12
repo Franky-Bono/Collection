@@ -26,7 +26,12 @@ function ComicsPage() {
     { key: "notes",     label: t("col_notes"),     width: 160, render: (item: Comic) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
   ] as const;
 
-  const columns = comicColumns
+  const mergedColumns = [
+    ...comicColumns,
+    ...ALL_COLUMNS.filter(c => !comicColumns.some(s => s.key === c.key)).map(c => ({ key: c.key, visible: false })),
+  ];
+
+  const columns = mergedColumns
     .filter((s) => s.visible)
     .map((s) => ALL_COLUMNS.find((c) => c.key === s.key))
     .filter(Boolean) as typeof ALL_COLUMNS[number][];
@@ -39,7 +44,7 @@ function ComicsPage() {
       atom={comicsAtom as any}
       kind="comics"
       columns={columns as any}
-      columnSettings={comicColumns}
+      columnSettings={mergedColumns}
       allColumnDefs={ALL_COLUMNS.map((c) => ({ key: c.key, label: c.label }))}
       setColumnSettings={setComicColumns}
     />

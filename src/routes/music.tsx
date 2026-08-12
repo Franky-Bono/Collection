@@ -25,7 +25,12 @@ function MusicPage() {
     { key: "notes",   label: t("col_notes"),   width: 160, render: (item: MusicAlbum) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
   ] as const;
 
-  const columns = musicColumns
+  const mergedColumns = [
+    ...musicColumns,
+    ...ALL_COLUMNS.filter(c => !musicColumns.some(s => s.key === c.key)).map(c => ({ key: c.key, visible: false })),
+  ];
+
+  const columns = mergedColumns
     .filter((s) => s.visible)
     .map((s) => ALL_COLUMNS.find((c) => c.key === s.key))
     .filter(Boolean) as typeof ALL_COLUMNS[number][];
@@ -38,7 +43,7 @@ function MusicPage() {
       atom={musicAtom as any}
       kind="music"
       columns={columns as any}
-      columnSettings={musicColumns}
+      columnSettings={mergedColumns}
       allColumnDefs={ALL_COLUMNS.map((c) => ({ key: c.key, label: c.label }))}
       setColumnSettings={setMusicColumns}
     />
