@@ -181,9 +181,11 @@ export async function writeToDrive(data: CollectionData & { customItems?: Record
         `https://www.googleapis.com/upload/drive/v3/files/${_fileId}?uploadType=media`,
         { method: "PATCH", headers: { Authorization: `Bearer ${_accessToken}`, "Content-Type": "application/json" }, body: blob }
       );
+      const respText = await resp.text();
+      console.log("[Drive] PATCH status:", resp.status, "response:", respText.slice(0, 200));
       if (!resp.ok) {
         _fileId = null;
-        throw new Error(`PATCH failed: ${resp.status} ${await resp.text()}`);
+        throw new Error(`PATCH failed: ${resp.status} ${respText}`);
       }
     } else {
       const meta = JSON.stringify({ name: FILE_NAME, mimeType: "application/json", parents: ["appDataFolder"] });
@@ -196,6 +198,7 @@ export async function writeToDrive(data: CollectionData & { customItems?: Record
       );
       if (!resp.ok) throw new Error(`POST failed: ${resp.status} ${await resp.text()}`);
       const created = await resp.json() as { id: string };
+      console.log("[Drive] created new file:", created.id);
       _fileId = created.id;
     }
     setStatus("idle");
