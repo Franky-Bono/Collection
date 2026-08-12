@@ -73,6 +73,7 @@ export function useDriveSync() {
 
   const loadFromDrive = useCallback(async () => {
     const data = await readFromDrive();
+    initialLoadDoneRef.current = true;
     if (!data) return;
     if (Array.isArray(data.books))      setBooks(data.books);
     if (Array.isArray(data.comics))     setComics(data.comics);
@@ -83,7 +84,6 @@ export function useDriveSync() {
     if (Array.isArray(data.customTypes)) setCustomTypes(data.customTypes);
     if (data.customItems && typeof data.customItems === "object") setCustomItems(data.customItems as Record<string, CustomItem[]>);
     setLastSync(new Date().toISOString());
-    initialLoadDoneRef.current = true;
   }, [setBooks, setComics, setVideoGames, setMovies, setMusic, setCustomTypes, setCustomItems, setLastSync]);
 
   const syncNow = useCallback(async () => {
