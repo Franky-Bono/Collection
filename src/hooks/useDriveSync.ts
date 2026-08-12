@@ -135,7 +135,7 @@ export function useDriveSync() {
   }, [enabled, clientId, loadFromDrive, setDriveUser]);
 
   useEffect(() => {
-    if (!enabled || !isSignedIn() || !initialLoadDoneRef.current) return;
+    if (!enabled || !driveUser || !initialLoadDoneRef.current) return;
     const snapshot = {
       books, comics, videoGames, movies, music: music as unknown[],
       customTypes, customItems: customItems as Record<string, CustomItem[]>,
@@ -147,23 +147,23 @@ export function useDriveSync() {
       pushToDrive(snapshot);
     }, 2000);
     return () => { if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null; } };
-  }, [books, comics, videoGames, movies, music, customTypes, customItems, enabled, pushToDrive]);
+  }, [books, comics, videoGames, movies, music, customTypes, customItems, enabled, driveUser, pushToDrive]);
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (!enabled) {
+    if (!enabled || !driveUser) {
       if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
       return;
     }
     if (pollRef.current) return;
     pollRef.current = setInterval(() => {
-      if (isSignedIn() && !isSyncingRef.current && !debounceRef.current) loadFromDrive();
+      if (!isSyncingRef.current && !debounceRef.current) loadFromDrive();
     }, 30000);
     return () => {
       if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
     };
-  }, [enabled, loadFromDrive]);
+  }, [enabled, driveUser, loadFromDrive]);
 
   const connect = useCallback(async (id: string) => {
     await initGoogleDrive(id);
