@@ -60,6 +60,9 @@ export function useDriveSync() {
   // Stays false until the initial Drive load completes; prevents writing empty
   // local state back to Drive before the read finishes.
   const initialLoadDoneRef = useRef(false);
+  // Suppresses the debounce watcher while a sync is in progress to prevent
+  // loadFromDrive atom updates from re-triggering another sync.
+  const isSyncingRef = useRef(false);
 
   useEffect(() => {
     setStatusListener((s) => {
@@ -94,10 +97,15 @@ export function useDriveSync() {
         return;
       }
     }
-    await loadFromDrive();
-    const data = readLocalAll();
-    await writeToDrive(data);
-    setLastSync(new Date().toISOString());
+    isSyncingRef.current = true;
+    try {
+      await loadFromDrive();
+      const data = readLocalAll();
+      await writeToDrive(data);
+      setLastSync(new Date().toISOString());
+    } finally {
+      isSyncingRef.current = false;
+    }
   }, [clientId, setDriveUser, loadFromDrive, setLastSync]);
 
   useEffect(() => {
@@ -116,7 +124,7 @@ export function useDriveSync() {
   }, [enabled, clientId, loadFromDrive, setDriveUser]);
 
   useEffect(() => {
-    if (!enabled || !isSignedIn() || !initialLoadDoneRef.current) return;
+    if (!enabled || !isSignedIn() || !initialLoadDoneRef.current || isSyncingRef.current) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => { syncNow(); }, 2000);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
