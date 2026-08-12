@@ -121,10 +121,11 @@ export function getUser(): { name: string; email: string } | null {
 
 async function findFile(): Promise<string | null> {
   const resp = await fetch(
-    `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='${FILE_NAME}'&fields=files(id,name)`,
+    `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='${FILE_NAME}'&fields=files(id,name,size,modifiedTime)`,
     { headers: { Authorization: `Bearer ${_accessToken}` } }
   );
-  const data = await resp.json() as { files: { id: string }[] };
+  const data = await resp.json() as { files: { id: string; size?: string; modifiedTime?: string }[] };
+  console.log("[Drive] findFile results:", JSON.stringify(data.files));
   return data.files?.[0]?.id ?? null;
 }
 
@@ -156,6 +157,7 @@ export async function writeToDrive(data: CollectionData & { customItems?: Record
   const blob = new Blob([body], { type: "application/json" });
 
   if (!_fileId) _fileId = await findFile();
+  console.log("[Drive] writing to fileId:", _fileId, "size:", body.length);
 
   try {
     if (_fileId) {
