@@ -9,6 +9,7 @@ import { useAtomValue } from "jotai";
 import { useState, useEffect } from "react";
 import { colorSchemeAtom, appPasswordHashAtom } from "@/state/atoms";
 import { LockScreen } from "@/components/auth/LockScreen";
+import { useCoverMigration } from "@/hooks/useCoverMigration";
 
 const router = createRouter({ routeTree, history: createHashHistory() });
 
@@ -18,6 +19,11 @@ function AppInner() {
 
   if (passwordHash && !unlocked) return <LockScreen hash={passwordHash} onUnlock={() => setUnlocked(true)} />;
   return <RouterProvider router={router} />;
+}
+
+function CoverMigration() {
+  useCoverMigration();
+  return null;
 }
 
 function ColorSchemeSync() {
@@ -32,6 +38,7 @@ export default function App() {
   return (
     <MantineProvider theme={theme} defaultColorScheme={colorScheme}>
       <ColorSchemeScript defaultColorScheme={colorScheme} />
+      <CoverMigration />
       <ColorSchemeSync />
       <Notifications />
       <AppInner />
