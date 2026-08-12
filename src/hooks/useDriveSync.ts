@@ -129,7 +129,12 @@ export function useDriveSync() {
 
   // Initial auth + load
   useEffect(() => {
-    if (!enabled || !clientId || driveInitialized) return;
+    if (!enabled || !clientId || driveInitialized) {
+      if (!enabled || !clientId) initialLoadDone = true;
+      // If already initialized, ensure initialLoadDone is eventually set
+      if (driveInitialized) setTimeout(() => { initialLoadDone = true; }, 5000);
+      return;
+    }
     driveInitialized = true;
     initGoogleDrive(clientId).then(async () => {
       try {
