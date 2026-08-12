@@ -6,6 +6,7 @@ import type { VideoGame } from "@/types";
 import { useT } from "@/i18n/useT";
 import { useAtom } from "jotai";
 import { Text } from "@mantine/core";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/videogames")({
   component: VideoGamesPage,
@@ -25,12 +26,15 @@ function VideoGamesPage() {
     { key: "notes",    label: t("col_notes"),    width: 160, render: (item: VideoGame) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
   ] as const;
 
-  const mergedColumns = [
-    ...videoGameColumns,
-    ...ALL_COLUMNS.filter(c => !videoGameColumns.some(s => s.key === c.key)).map(c => ({ key: c.key, visible: false })),
-  ];
+  // Persist any new columns missing from stored settings (e.g. after app updates)
+  useEffect(() => {
+    const missing = ALL_COLUMNS.filter(c => !videoGameColumns.some(s => s.key === c.key));
+    if (missing.length > 0) {
+      setVideoGameColumns([...videoGameColumns, ...missing.map(c => ({ key: c.key, visible: false }))]);
+    }
+  }, []);
 
-  const columns = mergedColumns
+  const columns = videoGameColumns
     .filter((s) => s.visible)
     .map((s) => ALL_COLUMNS.find((c) => c.key === s.key))
     .filter(Boolean) as typeof ALL_COLUMNS[number][];
@@ -43,7 +47,7 @@ function VideoGamesPage() {
       atom={videoGamesAtom as any}
       kind="videogames"
       columns={columns as any}
-      columnSettings={mergedColumns}
+      columnSettings={videoGameColumns}
       allColumnDefs={ALL_COLUMNS.map((c) => ({ key: c.key, label: c.label }))}
       setColumnSettings={setVideoGameColumns}
     />

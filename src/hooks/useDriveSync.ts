@@ -84,7 +84,17 @@ export function useDriveSync() {
   }, [setBooks, setComics, setVideoGames, setMovies, setMusic, setCustomTypes, setCustomItems, setLastSync]);
 
   const pushToDrive = useCallback(async (snapshot: CollectionData & { music: unknown[]; customItems: Record<string, CustomItem[]> }) => {
-    if (!isSignedIn()) { console.log("[Drive] pushToDrive skipped: not signed in"); return; }
+    if (!isSignedIn()) {
+      if (!clientId) return;
+      try {
+        await initGoogleDrive(clientId);
+        await signInSilent(clientId, driveUser?.email);
+        setDriveUser(getUser());
+      } catch {
+        console.log("[Drive] pushToDrive skipped: silent re-auth failed");
+        return;
+      }
+    }
     console.log("[Drive] pushing to Drive...");
     isSyncing = true;
     try {
@@ -94,7 +104,7 @@ export function useDriveSync() {
     } finally {
       isSyncing = false;
     }
-  }, [setLastSync]);
+  }, [clientId, driveUser, setDriveUser, setLastSync]);
 
   const syncNow = useCallback(async () => {
     if (!clientId) return;
