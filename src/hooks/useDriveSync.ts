@@ -108,11 +108,13 @@ export function useDriveSync() {
   }, [clientId, setDriveUser, loadFromDrive, setLastSync]);
 
   const pushToDrive = useCallback(async (snapshot?: CollectionData & { music: unknown[]; customItems: Record<string, CustomItem[]> }) => {
-    if (!isSignedIn()) return;
+    if (!isSignedIn()) { console.log("[Drive] pushToDrive skipped: not signed in"); return; }
+    console.log("[Drive] pushing to Drive...");
     isSyncingRef.current = true;
     try {
       const data = snapshot ?? readLocalAll();
       await writeToDrive(data);
+      console.log("[Drive] push complete");
       setLastSync(new Date().toISOString());
     } finally {
       isSyncingRef.current = false;
@@ -135,6 +137,7 @@ export function useDriveSync() {
   }, [enabled, clientId, loadFromDrive, setDriveUser]);
 
   useEffect(() => {
+    console.log("[Drive] debounce effect — enabled:", enabled, "driveUser:", !!driveUser, "initialLoadDone:", initialLoadDoneRef.current);
     if (!enabled || !driveUser || !initialLoadDoneRef.current) return;
     const snapshot = {
       books, comics, videoGames, movies, music: music as unknown[],
