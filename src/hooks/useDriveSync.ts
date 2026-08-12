@@ -4,7 +4,7 @@ import {
   booksAtom, comicsAtom, videoGamesAtom, moviesAtom, musicAtom,
   customTypesAtom, customItemsAtom,
   driveClientIdAtom, driveSyncEnabledAtom, driveLastSyncAtom,
-  driveSyncStatusAtom, driveUserAtom,
+  driveSyncStatusAtom, driveUserAtom, drivePendingAtom,
 } from "@/state/atoms";
 import {
   initGoogleDrive, signIn, signInSilent, signOut, isSignedIn, getUser,
@@ -30,6 +30,7 @@ export function useDriveSync() {
   const setStatus        = useSetAtom(driveSyncStatusAtom);
   const [driveUser, setDriveUser] = useAtom(driveUserAtom);
   const lastSync         = useAtomValue(driveLastSyncAtom);
+  const setPending       = useSetAtom(drivePendingAtom);
 
   const [, setBooks]      = useAtom(booksAtom);
   const [, setComics]     = useAtom(comicsAtom);
@@ -74,8 +75,8 @@ export function useDriveSync() {
 
   const pushToDrive = useCallback(async (snapshot: Snapshot) => {
     if (!isSignedIn()) {
-      // Queue the snapshot — syncNow (user gesture) will flush it after re-auth
       pendingSnapshot = snapshot;
+      setPending(true);
       console.log("[Drive] push queued: not signed in, will flush on next Sync Now");
       return;
     }
@@ -83,12 +84,13 @@ export function useDriveSync() {
     try {
       await writeToDrive(snapshot);
       pendingSnapshot = null;
+      setPending(false);
       console.log("[Drive] push complete");
       setLastSync(new Date().toISOString());
     } finally {
       isSyncing = false;
     }
-  }, [setLastSync]);
+  }, [setLastSync, setPending]);
 
   // syncNow: re-auth if needed (user gesture = no popup block), flush pending push, then pull
   const syncNow = useCallback(async () => {
@@ -108,6 +110,7 @@ export function useDriveSync() {
       if (pendingSnapshot) {
         await writeToDrive(pendingSnapshot);
         pendingSnapshot = null;
+        setPending(false);
         console.log("[Drive] flushed pending snapshot");
       }
       await loadFromDrive();
@@ -181,9 +184,10 @@ export function useDriveSync() {
     initialLoadDone = false;
     isLoadingFromDrive = false;
     pendingSnapshot = null;
+    setPending(false);
     if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; }
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
   }, [setEnabled, setDriveUser]);
 
-  return { syncNow, connect, disconnect, user: driveUser, lastSync, enabled, signedIn: isSignedIn(), hasPending: !!pendingSnapshot };
+  return { syncNow, connect, disconnect, user: driveUser, lastSync, enabled, signedIn: isSignedIn() };
 }

@@ -21,7 +21,7 @@ import { IconAlertCircle, IconDownload, IconPlus, IconRefresh, IconTrash, IconUp
 import { useMantineColorScheme } from "@mantine/core";
 import { exportJSON, importJSON } from "@/storage";
 import { useAtom, useAtomValue } from "jotai";
-import { booksAtom, comicsAtom, moviesAtom, musicAtom, videoGamesAtom, languageAtom, colorSchemeAtom, customTypesAtom, customItemsAtom, driveClientIdAtom, driveSyncStatusAtom, driveLastSyncAtom, appPasswordHashAtom, thousandSeparatorAtom, dateFormatAtom } from "@/state/atoms";
+import { booksAtom, comicsAtom, moviesAtom, musicAtom, videoGamesAtom, languageAtom, colorSchemeAtom, customTypesAtom, customItemsAtom, driveClientIdAtom, driveSyncStatusAtom, driveLastSyncAtom, appPasswordHashAtom, thousandSeparatorAtom, dateFormatAtom, drivePendingAtom } from "@/state/atoms";
 import type { CollectionData, CustomCollectionType } from "@/types";
 import { useT } from "@/i18n/useT";
 import type { Language } from "@/i18n/translations";
@@ -78,7 +78,8 @@ export function SettingsPage() {
   const [draftClientId, setDraftClientId] = useState(clientId);
   const syncStatus = useAtomValue(driveSyncStatusAtom);
   const lastSync = useAtomValue(driveLastSyncAtom);
-  const { connect, disconnect, syncNow, user: driveUser, enabled: driveEnabled, signedIn: driveSignedIn, hasPending } = useDriveSync();
+  const hasPending = useAtomValue(drivePendingAtom);
+  const { connect, disconnect, syncNow, user: driveUser, enabled: driveEnabled, signedIn: driveSignedIn } = useDriveSync();
 
   const handleNewType = (type: CustomCollectionType) => {
     setCustomTypes([...customTypes, type]);
