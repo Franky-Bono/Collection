@@ -229,6 +229,14 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
     getScrollElement: () => parentRef.current,
     estimateSize: () => ROW_HEIGHT,
     overscan: 10,
+    observeElementRect: (instance, cb) => {
+      const el = instance.scrollElement;
+      if (!el) return;
+      const ro = new ResizeObserver(() => cb({ width: el.clientWidth, height: el.clientHeight }));
+      ro.observe(el);
+      cb({ width: el.clientWidth, height: el.clientHeight });
+      return () => ro.disconnect();
+    },
   });
 
   const toggleSort = (key: string) => {
@@ -350,7 +358,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
 
       {/* Table */}
       <Card withBorder p={0} style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
-        <Box ref={parentRef} style={{ height: "100%", overflowY: "auto" }}>
+        <Box ref={parentRef} style={{ height: "100%", minHeight: 0, overflowY: "auto" }}>
           <Table style={{ tableLayout: "fixed" }}>
             <colgroup>
               <col style={{ width: 36 }} />
