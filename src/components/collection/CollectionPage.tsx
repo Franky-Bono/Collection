@@ -1,6 +1,6 @@
-import { ActionIcon, Badge, Box, Button, Card, Checkbox, Group, Modal, Table, Text, TextInput, Stack, UnstyledButton } from "@mantine/core";
+import { ActionIcon, Badge, Box, Button, Card, Checkbox, Group, Modal, Table, Text, TextInput, Stack, UnstyledButton, Switch, Tooltip } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconBarcode, IconChevronDown, IconChevronUp, IconEdit, IconPlus, IconSelector, IconTrash, IconX } from "@tabler/icons-react";
+import { IconBarcode, IconChevronDown, IconChevronUp, IconColumns, IconEdit, IconGripVertical, IconPlus, IconSelector, IconTrash, IconX } from "@tabler/icons-react";
 import type { WritableAtom } from "jotai";
 import { useAtom } from "jotai";
 import { useMemo, useRef, useState } from "react";
@@ -14,6 +14,7 @@ import { useT } from "@/i18n/useT";
 import { fetchImageAsBase64 } from "@/lib/imageUtils";
 import type { TranslationKey } from "@/i18n/translations";
 import { useFormatting } from "@/hooks/useFormatting";
+import type { MovieColumnSetting } from "@/state/atoms";
 
 type CollectionKind = "books" | "comics" | "videogames" | "movies" | "music";
 
@@ -33,6 +34,70 @@ interface Props {
   kind: CollectionKind;
   columns: ColumnDef[];
   titleWidth?: number;
+  columnSettings?: MovieColumnSetting[];
+  allColumnDefs?: { key: string; label: string }[];
+  setColumnSettings?: (s: MovieColumnSetting[]) => void;
+}
+
+function ColumnsModal({ opened, onClose, settings, allDefs, onChange }: {
+  opened: boolean;
+  onClose: () => void;
+  settings: MovieColumnSetting[];
+  allDefs: { key: string; label: string }[];
+  onChange: (s: MovieColumnSetting[]) => void;
+}) {
+  const t = useT();
+  const [draft, setDraft] = useState<MovieColumnSetting[]>(settings);
+  const dragIndex = useRef<number | null>(null);
+
+  // Keep draft in sync when modal opens
+  const handleOpen = () => setDraft(settings);
+
+  const toggle = (key: string) =>
+    setDraft((prev) => prev.map((s) => s.key === key ? { ...s, visible: !s.visible } : s));
+
+  const onDragStart = (i: number) => { dragIndex.current = i; };
+  const onDragOver = (e: React.DragEvent, i: number) => {
+    e.preventDefault();
+    if (dragIndex.current === null || dragIndex.current === i) return;
+    setDraft((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(dragIndex.current!, 1);
+      next.splice(i, 0, moved);
+      dragIndex.current = i;
+      return next;
+    });
+  };
+  const onDragEnd = () => { dragIndex.current = null; };
+
+  const getLabel = (key: string) => allDefs.find((d) => d.key === key)?.label ?? key;
+
+  return (
+    <Modal opened={opened} onClose={onClose} title={t("col_columns_title" as TranslationKey)} centered size="sm" onTransitionEnd={() => { if (opened) handleOpen(); }}>
+      <Stack gap="xs">
+        <Text size="xs" c="dimmed">{t("col_columns_hint" as TranslationKey)}</Text>
+        {draft.map((s, i) => (
+          <Group
+            key={s.key}
+            gap="sm"
+            draggable
+            onDragStart={() => onDragStart(i)}
+            onDragOver={(e) => onDragOver(e, i)}
+            onDragEnd={onDragEnd}
+            style={{ cursor: "grab", padding: "4px 8px", borderRadius: 6, background: "var(--mantine-color-default-hover)" }}
+          >
+            <IconGripVertical size={14} style={{ color: "var(--mantine-color-dimmed)", flexShrink: 0 }} />
+            <Switch size="sm" checked={s.visible} onChange={() => toggle(s.key)} />
+            <Text size="sm" style={{ flex: 1 }}>{getLabel(s.key)}</Text>
+          </Group>
+        ))}
+        <Group justify="flex-end" mt="sm">
+          <Button variant="default" size="xs" onClick={onClose}>{t("delete_cancel" as TranslationKey)}</Button>
+          <Button size="xs" onClick={() => { onChange(draft); onClose(); }}>{t("common_apply" as TranslationKey)}</Button>
+        </Group>
+      </Stack>
+    </Modal>
+  );
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -103,7 +168,7 @@ function getValue(item: AnyItem, key: string): string | number {
 
 type SortKey = { key: string; dir: "asc" | "desc" };
 
-export function CollectionPage({ title, singular, icon, atom, kind, columns, titleWidth }: Props) {
+export function CollectionPage({ title, singular, icon, atom, kind, columns, titleWidth, columnSettings, allColumnDefs, setColumnSettings }: Props) {
   const t = useT();
   const { formatNumber } = useFormatting();
   const [items, setItems] = useAtom(atom);
@@ -116,6 +181,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
   const [detailItem, setDetailItem] = useState<AnyItem | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [deleteSelected, setDeleteSelected] = useState(false);
+  const [columnsOpen, setColumnsOpen] = useState(false);
   const parentRef = useRef<HTMLDivElement>(null);
 
   const setFilter = (key: string, value: string) => {
@@ -259,6 +325,13 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
             <Button size="xs" variant="subtle" onClick={() => setColumnFilters({})}>
               {t("delete_cancel")}
             </Button>
+          )}
+          {columnSettings && setColumnSettings && allColumnDefs && (
+            <Tooltip label={t("col_columns_title" as TranslationKey)}>
+              <Button size="xs" variant="default" leftSection={<IconColumns size={14} />} onClick={() => setColumnsOpen(true)}>
+                {t("col_columns_title" as TranslationKey)}
+              </Button>
+            </Tooltip>
           )}
           <Button
             variant="default"
@@ -438,6 +511,16 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
           </Group>
         </Stack>
       </Modal>
+
+      {columnSettings && setColumnSettings && allColumnDefs && (
+        <ColumnsModal
+          opened={columnsOpen}
+          onClose={() => setColumnsOpen(false)}
+          settings={columnSettings}
+          allDefs={allColumnDefs}
+          onChange={setColumnSettings}
+        />
+      )}
     </Box>
   );
 }

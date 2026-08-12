@@ -64,3 +64,23 @@ export const driveSyncStatusAtom = atom<"idle" | "syncing" | "error">("idle");
 export const driveUserAtom = atom<{ name: string; email: string } | null>(null);
 
 export const appPasswordHashAtom = atomWithStorage<string>("collection-password-hash", "");
+
+export interface MovieColumnSetting { key: string; visible: boolean; }
+export const DEFAULT_MOVIE_COLUMNS: MovieColumnSetting[] = [
+  { key: "year",      visible: true  },
+  { key: "director",  visible: true  },
+  { key: "country",   visible: true  },
+  { key: "duration",  visible: true  },
+  { key: "edition",   visible: true  },
+  { key: "quality",   visible: true  },
+  { key: "format",    visible: false },
+  { key: "location",  visible: true  },
+  { key: "genre",     visible: true  },
+  { key: "status",    visible: false },
+  { key: "rating",    visible: false },
+  { key: "notes",     visible: false },
+];
+export const movieColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
+  "collection-movie-columns",
+  DEFAULT_MOVIE_COLUMNS,
+);

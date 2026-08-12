@@ -67,6 +67,9 @@ const translations = {
     col_location: "Location",
     col_notes: "Notes",
     col_language: "Language",
+    col_columns_title: "Columns",
+    col_columns_hint: "Toggle visibility and drag to reorder.",
+    common_apply: "Apply",
 
     // Status values
     status_unread: "Unread",
@@ -334,6 +337,9 @@ const translations = {
     col_location: "Emplacement",
     col_notes: "Notes",
     col_language: "Langue",
+    col_columns_title: "Colonnes",
+    col_columns_hint: "Activez/désactivez et glissez pour réordonner.",
+    common_apply: "Appliquer",
 
     // Status values
     status_unread: "Non lu",
