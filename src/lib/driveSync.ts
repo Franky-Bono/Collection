@@ -130,12 +130,12 @@ async function findFile(): Promise<string | null> {
 }
 
 export async function readFromDrive(): Promise<(CollectionData & { customItems?: Record<string, unknown[]> }) | null> {
-  if (!_accessToken || !_gapiReady) return null;
+  if (!_accessToken || !_gapiReady) { console.log("[Drive] readFromDrive skipped: not signed in or GAPI not ready"); return null; }
   setStatus("syncing");
   try {
-    if (!_fileId) _fileId = await findFile();
-    if (!_fileId) { setStatus("idle"); return null; }
-
+    _fileId = await findFile();
+    if (!_fileId) { console.log("[Drive] readFromDrive: no file found"); setStatus("idle"); return null; }
+    console.log("[Drive] reading fileId:", _fileId);
     const resp = await fetch(
       `https://www.googleapis.com/drive/v3/files/${_fileId}?alt=media`,
       { headers: { Authorization: `Bearer ${_accessToken}` } }
