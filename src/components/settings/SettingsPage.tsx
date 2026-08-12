@@ -1,4 +1,5 @@
 import {
+  Alert,
   Badge,
   Box,
   Button,
@@ -16,7 +17,7 @@ import {
   Title,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconDownload, IconPlus, IconRefresh, IconTrash, IconUpload } from "@tabler/icons-react";
+import { IconAlertCircle, IconDownload, IconPlus, IconRefresh, IconTrash, IconUpload } from "@tabler/icons-react";
 import { useMantineColorScheme } from "@mantine/core";
 import { exportJSON, importJSON } from "@/storage";
 import { useAtom, useAtomValue } from "jotai";
@@ -77,7 +78,7 @@ export function SettingsPage() {
   const [draftClientId, setDraftClientId] = useState(clientId);
   const syncStatus = useAtomValue(driveSyncStatusAtom);
   const lastSync = useAtomValue(driveLastSyncAtom);
-  const { connect, disconnect, syncNow, user: driveUser, enabled: driveEnabled } = useDriveSync();
+  const { connect, disconnect, syncNow, user: driveUser, enabled: driveEnabled, signedIn: driveSignedIn } = useDriveSync();
 
   const handleNewType = (type: CustomCollectionType) => {
     setCustomTypes([...customTypes, type]);
@@ -331,6 +332,11 @@ export function SettingsPage() {
                   </Button>
                 </Group>
               </Group>
+              {!driveSignedIn && (
+                <Alert icon={<IconAlertCircle size={14} />} color="yellow" variant="light" p="xs">
+                  <Text size="xs">Session expired — click Sync Now to re-authenticate and load latest data.</Text>
+                </Alert>
+              )}
               <Text size="xs" c="dimmed">{t("settings_drive_auto_hint")}</Text>
             </Stack>
           )}

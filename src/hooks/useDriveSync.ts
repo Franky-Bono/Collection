@@ -146,5 +146,5 @@ export function useDriveSync() {
     initialLoadDoneRef.current = false;
   }, [setEnabled, setDriveUser]);
 
-  return { syncNow, connect, disconnect, user: driveUser, lastSync, enabled };
+  return { syncNow, connect, disconnect, user: driveUser, lastSync, enabled, signedIn: isSignedIn() };
 }
