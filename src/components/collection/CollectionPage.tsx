@@ -166,7 +166,11 @@ function getValue(item: AnyItem, key: string): string | number {
 }
 
 function normalize(s: string): string {
-  return s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+  return s
+    .replace(/œ/g, "oe").replace(/Œ/g, "oe")
+    .replace(/æ/g, "ae").replace(/Æ/g, "ae")
+    .normalize("NFD").replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
 }
 
 type SortKey = { key: string; dir: "asc" | "desc" };
