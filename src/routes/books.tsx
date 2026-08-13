@@ -17,8 +17,10 @@ function BooksPage() {
 
   const ALL_COLUMNS = [
     { key: "author",   label: t("col_author"),   width: 200 },
+    { key: "editor",   label: t("col_editor"),   width: 140 },
     { key: "genre",    label: t("col_genre"),    width: 120 },
     { key: "year",     label: t("col_year"),     width: 80  },
+    { key: "pages",    label: t("col_pages"),    width: 80  },
     { key: "language", label: t("col_language"), width: 110 },
     { key: "format",   label: t("col_format"),   width: 110, render: (item: Book) => <FormatBadge value={item.format} />, getSearchValue: (item: Book) => getFormatLabel(item.format ?? "", t) },
     { key: "status",   label: t("col_status"),   width: 120, render: (item: Book) => <StatusBadge value={item.status} />, getSearchValue: (item: Book) => getStatusLabel(item.status ?? "", t) },
