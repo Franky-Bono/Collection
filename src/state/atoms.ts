@@ -88,7 +88,8 @@ export const movieColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
 );
 
 export const DEFAULT_BOOK_COLUMNS: MovieColumnSetting[] = [
-  { key: "author",   visible: true  },
+  { key: "author",    visible: true  },
+  { key: "publisher", visible: false },
   { key: "genre",    visible: true  },
   { key: "year",     visible: true  },
   { key: "pages",    visible: false },
@@ -109,6 +110,7 @@ export const DEFAULT_COMIC_COLUMNS: MovieColumnSetting[] = [
   { key: "series",    visible: true  },
   { key: "issue",     visible: true  },
   { key: "year",      visible: true  },
+  { key: "publisher", visible: false },
   { key: "condition", visible: true  },
   { key: "status",    visible: true  },
   { key: "rating",    visible: true  },

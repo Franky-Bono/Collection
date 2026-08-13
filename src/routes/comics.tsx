@@ -19,6 +19,7 @@ function ComicsPage() {
     { key: "series",    label: t("col_series"),    width: 140 },
     { key: "issue",     label: t("col_issue"),     width: 80  },
     { key: "year",      label: t("col_year"),      width: 80  },
+    { key: "publisher", label: t("col_publisher"), width: 140 },
     { key: "condition", label: t("col_condition"), width: 110, render: (item: Comic) => <StatusBadge value={item.condition} />, getSearchValue: (item: Comic) => getStatusLabel(item.condition ?? "", t) },
     { key: "status",    label: t("col_status"),    width: 120, render: (item: Comic) => <StatusBadge value={item.status} />, getSearchValue: (item: Comic) => getStatusLabel(item.status ?? "", t) },
     { key: "rating",    label: t("col_rating"),    width: 90  },
