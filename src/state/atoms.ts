@@ -94,6 +94,8 @@ export const DEFAULT_BOOK_COLUMNS: MovieColumnSetting[] = [
   { key: "year",     visible: true  },
   { key: "pages",    visible: false },
   { key: "language", visible: true  },
+  { key: "edition",  visible: false },
+  { key: "location", visible: false },
   { key: "format",   visible: true  },
   { key: "status",   visible: true  },
   { key: "rating",   visible: true  },

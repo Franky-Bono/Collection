@@ -22,6 +22,8 @@ function BooksPage() {
     { key: "year",     label: t("col_year"),     width: 80  },
     { key: "pages",    label: t("col_pages"),    width: 80  },
     { key: "language", label: t("col_language"), width: 110 },
+    { key: "edition",  label: t("col_edition"),  width: 120 },
+    { key: "location", label: t("col_location"), width: 120 },
     { key: "format",   label: t("col_format"),   width: 110, render: (item: Book) => <FormatBadge value={item.format} />, getSearchValue: (item: Book) => getFormatLabel(item.format ?? "", t) },
     { key: "status",   label: t("col_status"),   width: 120, render: (item: Book) => <StatusBadge value={item.status} />, getSearchValue: (item: Book) => getStatusLabel(item.status ?? "", t) },
     { key: "rating",   label: t("col_rating"),   width: 90  },
