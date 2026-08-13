@@ -31,7 +31,7 @@ function MoviesPage() {
   ] as const;
 
   const mergedColumns = [
-    ...movieColumns,
+    ...movieColumns.filter(s => ALL_COLUMNS.some(c => c.key === s.key)),
     ...ALL_COLUMNS.filter(c => !movieColumns.some(s => s.key === c.key)).map(c => ({ key: c.key, visible: false })),
   ];
 

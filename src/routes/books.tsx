@@ -30,7 +30,7 @@ function BooksPage() {
   ] as const;
 
   const mergedColumns = [
-    ...bookColumns,
+    ...bookColumns.filter(s => ALL_COLUMNS.some(c => c.key === s.key)),
     ...ALL_COLUMNS.filter(c => !bookColumns.some(s => s.key === c.key)).map(c => ({ key: c.key, visible: false })),
   ];
 

@@ -26,7 +26,7 @@ function ComicsPage() {
   ] as const;
 
   const mergedColumns = [
-    ...comicColumns,
+    ...comicColumns.filter(s => ALL_COLUMNS.some(c => c.key === s.key)),
     ...ALL_COLUMNS.filter(c => !comicColumns.some(s => s.key === c.key)).map(c => ({ key: c.key, visible: false })),
   ];
 

@@ -26,7 +26,7 @@ function MusicPage() {
   ] as const;
 
   const mergedColumns = [
-    ...musicColumns,
+    ...musicColumns.filter(s => ALL_COLUMNS.some(c => c.key === s.key)),
     ...ALL_COLUMNS.filter(c => !musicColumns.some(s => s.key === c.key)).map(c => ({ key: c.key, visible: false })),
   ];
 
