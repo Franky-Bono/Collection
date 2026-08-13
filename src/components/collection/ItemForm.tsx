@@ -3,6 +3,7 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useT } from "@/i18n/useT";
+import type { TranslationKey } from "@/i18n/translations";
 import type { Book, Comic, VideoGame, Movie, MusicAlbum, AnyItem } from "@/types";
 
 type CollectionKind = "books" | "comics" | "videogames" | "movies" | "music";
@@ -15,24 +16,29 @@ interface Props {
   onSave: (item: AnyItem) => void;
 }
 
-const STATUS_OPTIONS: Record<CollectionKind, string[]> = {
-  books:      ["Unread", "Reading", "Read", "Wishlist", "Dropped"],
-  comics:     ["Unread", "Reading", "Read", "Wishlist", "Owned"],
-  videogames: ["Backlog", "Playing", "Completed", "Dropped", "Wishlist"],
-  movies:     ["Unwatched", "Watched", "Wishlist"],
-  music:      ["Owned", "Wishlist", "Listened"],
+type SelectOption = { value: string; label: string };
+
+const STATUS_VALUES: Record<CollectionKind, { value: string; key: string }[]> = {
+  books:      [{ value: "Unread", key: "status_unread" }, { value: "Reading", key: "status_reading" }, { value: "Read", key: "status_read" }, { value: "Wishlist", key: "status_wishlist" }, { value: "Dropped", key: "status_dropped" }],
+  comics:     [{ value: "Unread", key: "status_unread" }, { value: "Reading", key: "status_reading" }, { value: "Read", key: "status_read" }, { value: "Wishlist", key: "status_wishlist" }, { value: "Owned", key: "status_owned" }],
+  videogames: [{ value: "Backlog", key: "status_backlog" }, { value: "Playing", key: "status_playing" }, { value: "Completed", key: "status_completed" }, { value: "Dropped", key: "status_dropped" }, { value: "Wishlist", key: "status_wishlist" }],
+  movies:     [{ value: "Unwatched", key: "status_unwatched" }, { value: "Watched", key: "status_watched" }, { value: "Wishlist", key: "status_wishlist" }],
+  music:      [{ value: "Owned", key: "status_owned" }, { value: "Wishlist", key: "status_wishlist" }, { value: "Listened", key: "status_listened" }],
 };
 
-const FORMAT_OPTIONS: Record<CollectionKind, string[]> = {
-  books:      ["Physical", "E-book", "Audiobook"],
-  comics:     ["Physical", "Digital"],
-  videogames: ["Physical", "Digital"],
-  movies:     ["Physical", "Digital", "Streaming"],
-  music:      ["Vinyl", "CD", "Cassette", "Digital", "Streaming"],
+const FORMAT_VALUES: Record<CollectionKind, { value: string; key: string }[]> = {
+  books:      [{ value: "Physical", key: "format_physical" }, { value: "E-book", key: "format_ebook" }, { value: "Audiobook", key: "format_audiobook" }],
+  comics:     [{ value: "Physical", key: "format_physical" }, { value: "Digital", key: "format_digital" }],
+  videogames: [{ value: "Physical", key: "format_physical" }, { value: "Digital", key: "format_digital" }],
+  movies:     [{ value: "Physical", key: "format_physical" }, { value: "Digital", key: "format_digital" }, { value: "Streaming", key: "format_streaming" }],
+  music:      [{ value: "Vinyl", key: "format_vinyl" }, { value: "CD", key: "format_cd" }, { value: "Cassette", key: "format_cassette" }, { value: "Digital", key: "format_digital" }, { value: "Streaming", key: "format_streaming" }],
 };
 
 export function ItemForm({ kind, initial, opened, onClose, onSave }: Props) {
   const t = useT();
+
+  const statusOptions: SelectOption[] = STATUS_VALUES[kind].map(({ value, key }) => ({ value, label: t(key as TranslationKey) }));
+  const formatOptions: SelectOption[] = FORMAT_VALUES[kind].map(({ value, key }) => ({ value, label: t(key as TranslationKey) }));
 
   const form = useForm({
     initialValues: {
@@ -101,7 +107,13 @@ export function ItemForm({ kind, initial, opened, onClose, onSave }: Props) {
               <TextInput  label={t("form_publisher")}                                              {...form.getInputProps("publisher")} />
               <Select
                 label={t("form_condition")}
-                data={["Poor", "Fair", "Good", "Very Fine", "Near Mint"]}
+                data={[
+                  { value: "Poor", label: t("condition_poor") },
+                  { value: "Fair", label: t("condition_fair") },
+                  { value: "Good", label: t("condition_good") },
+                  { value: "Very Fine", label: t("condition_vf") },
+                  { value: "Near Mint", label: t("condition_nm") },
+                ]}
                 clearable
                 {...form.getInputProps("condition")}
               />
@@ -142,13 +154,13 @@ export function ItemForm({ kind, initial, opened, onClose, onSave }: Props) {
 
           <Select
             label={t("form_format")}
-            data={FORMAT_OPTIONS[kind]}
+            data={formatOptions}
             clearable
             {...form.getInputProps("format")}
           />
           <Select
             label={t("form_status")}
-            data={STATUS_OPTIONS[kind]}
+            data={statusOptions}
             clearable
             {...form.getInputProps("status")}
           />

@@ -165,6 +165,10 @@ function getValue(item: AnyItem, key: string): string | number {
   return typeof v === "number" ? v : String(v).toLowerCase();
 }
 
+function normalize(s: string): string {
+  return s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+}
+
 type SortKey = { key: string; dir: "asc" | "desc" };
 
 export function CollectionPage({ title, singular, icon, atom, kind, columns, titleWidth, columnSettings, allColumnDefs, setColumnSettings }: Props) {
@@ -204,7 +208,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
         const searchVal = col?.getSearchValue
           ? col.getSearchValue(item)
           : String(getValue(item, key));
-        return searchVal.toLowerCase().includes(q.toLowerCase());
+        return normalize(searchVal).includes(normalize(q));
       });
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -217,7 +221,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
       if (av === bv) continue;
       const cmp = typeof av === "number" && typeof bv === "number"
         ? av - bv
-        : String(av).localeCompare(String(bv));
+        : String(av).localeCompare(String(bv), undefined, { sensitivity: "base", ignorePunctuation: true });
       return dir === "asc" ? cmp : -cmp;
     }
     return 0;
@@ -328,11 +332,6 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
           )}
         </Group>
         <Group gap="xs">
-          {hasFilters && (
-            <Button size="xs" variant="subtle" onClick={() => setColumnFilters({})}>
-              {t("filter_reset" as TranslationKey)}
-            </Button>
-          )}
           {columnSettings && setColumnSettings && allColumnDefs && (
             <Tooltip label={t("col_columns_title" as TranslationKey)}>
               <Button size="xs" variant="default" leftSection={<IconColumns size={14} />} onClick={() => setColumnsOpen(true)}>
@@ -422,7 +421,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
                 ))}
                 <Table.Td style={{ width: 72 }}>
                   {hasFilters && (
-                    <ActionIcon size="sm" variant="subtle" color="red" title="Reset filters" onClick={() => setColumnFilters({})}>
+                    <ActionIcon size="sm" variant="subtle" color="red" title={t("filter_reset" as TranslationKey)} onClick={() => setColumnFilters({})}>
                       <IconX size={14} />
                     </ActionIcon>
                   )}
