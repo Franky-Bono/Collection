@@ -95,6 +95,7 @@ export function ItemForm({ kind, initial, opened, onClose, onSave }: Props) {
           <TextInput label={t("form_title")} required {...form.getInputProps("title")} />
 
           {kind === "books"      && <TextInput label={t("form_author")}   {...form.getInputProps("author")} />}
+          {kind === "books"      && <TextInput label={t("form_editor")}   {...form.getInputProps("editor")} />}
           {kind === "music"      && <TextInput label={t("form_artist")}   {...form.getInputProps("artist")} />}
           {kind === "comics"     && <TextInput label={t("form_editor")}   {...form.getInputProps("editor")} />}
           {kind === "videogames" && <TextInput label={t("form_studio")}   {...form.getInputProps("studio")} />}
