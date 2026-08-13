@@ -29,6 +29,7 @@ export interface Comic {
   notes?: string;
   series?: string;
   issue?: number;
+  pages?: number;
   publisher?: string;
   condition?: string;
   location?: string;

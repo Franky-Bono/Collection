@@ -16,10 +16,13 @@ function ComicsPage() {
   const [comicColumns, setComicColumns] = useAtom(comicColumnsAtom);
 
   const ALL_COLUMNS = [
+    { key: "author",    label: t("col_author"),    width: 140 },
     { key: "series",    label: t("col_series"),    width: 140 },
     { key: "issue",     label: t("col_issue"),     width: 80  },
+    { key: "pages",     label: t("col_pages"),     width: 80  },
     { key: "year",      label: t("col_year"),      width: 80  },
     { key: "publisher", label: t("col_publisher"), width: 140 },
+    { key: "genre",     label: t("col_genre"),     width: 110 },
     { key: "condition", label: t("col_condition"), width: 110, render: (item: Comic) => <StatusBadge value={item.condition} />, getSearchValue: (item: Comic) => getStatusLabel(item.condition ?? "", t) },
     { key: "status",    label: t("col_status"),    width: 120, render: (item: Comic) => <StatusBadge value={item.status} />, getSearchValue: (item: Comic) => getStatusLabel(item.status ?? "", t) },
     { key: "rating",    label: t("col_rating"),    width: 90  },
