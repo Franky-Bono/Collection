@@ -17,6 +17,7 @@ function ComicsPage() {
 
   const ALL_COLUMNS = [
     { key: "editor",    label: t("col_editor"),    width: 140 },
+    { key: "author",    label: t("col_author"),    width: 160 },
     { key: "series",    label: t("col_series"),    width: 140 },
     { key: "issue",     label: t("col_issue"),     width: 80  },
     { key: "year",      label: t("col_year"),      width: 80  },

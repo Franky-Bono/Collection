@@ -21,6 +21,7 @@ export interface Book {
 export interface Comic {
   id: string;
   title: string;
+  author?: string;
   editor?: string;
   genre?: string;
   year?: number;
