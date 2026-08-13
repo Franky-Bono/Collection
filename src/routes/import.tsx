@@ -21,7 +21,6 @@ type CollectionKind = "books" | "comics" | "videogames" | "movies" | "music";
 const FIELD_LABEL_KEY: Record<string, TranslationKey> = {  title:     "col_title",
   author:    "col_author",
   artist:    "col_artist",
-  editor:    "col_editor",
   studio:    "col_studio",
   director:  "col_director",
   genre:     "col_genre",
@@ -47,7 +46,7 @@ const FIELD_LABEL_KEY: Record<string, TranslationKey> = {  title:     "col_title
 
 const FIELD_OPTIONS: Record<CollectionKind, string[]> = {
   books:      ["title", "author", "genre", "year", "format", "language", "status", "rating", "notes", "edition", "pages", "publisher", "location"],
-  comics:     ["title", "editor", "series", "issue", "genre", "year", "format", "status", "rating", "notes", "publisher", "condition", "location"],
+  comics:     ["title", "author", "series", "issue", "genre", "year", "format", "status", "rating", "notes", "publisher", "condition", "location"],
   videogames: ["title", "studio", "genre", "year", "platform", "status", "rating", "notes", "location"],
   movies:     ["title", "director", "genre", "year", "duration", "format", "edition", "status", "rating", "notes", "quality", "country", "location"],
   music:      ["title", "artist", "genre", "year", "format", "status", "rating", "notes", "label", "duration", "location"],

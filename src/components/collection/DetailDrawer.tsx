@@ -50,7 +50,6 @@ export function DetailDrawer({ item, opened, onClose, onEdit }: Props) {
         <Field label={t("col_artist")}    value={i.artist as string} />
         <Field label={t("col_director")}  value={i.director as string} />
         <Field label={t("col_studio")}    value={i.studio as string} />
-        <Field label={t("col_editor")}    value={i.editor as string} />
         <Field label={t("col_genre")}     value={i.genre as string} />
         <Field label={t("col_year")}      value={i.year as number} />
         <Field label={t("col_format")}    value={i.format as string} />

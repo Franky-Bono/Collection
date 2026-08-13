@@ -45,7 +45,6 @@ export function ItemForm({ kind, initial, opened, onClose, onSave }: Props) {
       title: (initial as unknown as Record<string, unknown>)?.title as string ?? "",
       author: (initial as unknown as Record<string, unknown>)?.author as string ?? "",
       artist: (initial as unknown as Record<string, unknown>)?.artist as string ?? "",
-      editor: (initial as unknown as Record<string, unknown>)?.editor as string ?? "",
       studio: (initial as unknown as Record<string, unknown>)?.studio as string ?? "",
       director: (initial as unknown as Record<string, unknown>)?.director as string ?? "",
       genre: (initial as unknown as Record<string, unknown>)?.genre as string ?? "",
@@ -95,9 +94,7 @@ export function ItemForm({ kind, initial, opened, onClose, onSave }: Props) {
           <TextInput label={t("form_title")} required {...form.getInputProps("title")} />
 
           {kind === "books"      && <TextInput label={t("form_author")}   {...form.getInputProps("author")} />}
-          {kind === "books"      && <TextInput label={t("form_editor")}   {...form.getInputProps("editor")} />}
           {kind === "music"      && <TextInput label={t("form_artist")}   {...form.getInputProps("artist")} />}
-          {kind === "comics"     && <TextInput label={t("form_editor")}   {...form.getInputProps("editor")} />}
           {kind === "comics"     && <TextInput label={t("form_author")}   {...form.getInputProps("author")} />}
           {kind === "videogames" && <TextInput label={t("form_studio")}   {...form.getInputProps("studio")} />}
           {kind === "movies"     && <TextInput label={t("form_director")} {...form.getInputProps("director")} />}
