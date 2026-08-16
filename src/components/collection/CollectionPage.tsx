@@ -411,7 +411,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
                     </UnstyledButton>
                   </Table.Th>
                 ))}
-                <Table.Th style={{ width: 36, position: "sticky", right: 0, background: "var(--mantine-color-dark-7)" }} />
+                <Table.Th style={{ width: 72 }} />
               </Table.Tr>
               {/* Per-column filter row */}
               <Table.Tr>
@@ -495,7 +495,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
                             }
                           </Table.Td>
                         ))}
-                        <Table.Td style={{ width: 36, position: "sticky", right: 0, background: "var(--mantine-color-dark-7)" }} onClick={(e) => e.stopPropagation()}>
+                        <Table.Td style={{ width: 36 }} onClick={(e) => e.stopPropagation()}>
                           <ActionIcon size="sm" variant="subtle" onClick={() => setEditItem(item)}><IconEdit size={14} /></ActionIcon>
                         </Table.Td>
                       </Table.Tr>
