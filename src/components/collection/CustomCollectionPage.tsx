@@ -144,10 +144,7 @@ export function CustomCollectionPage({ typeId }: Props) {
                   </Table.Td>
                 ))}
                 <Table.Td>
-                  <Group gap={4}>
-                    <ActionIcon size="sm" variant="subtle" onClick={() => setEditItem(item)}><IconEdit size={14} /></ActionIcon>
-                    <ActionIcon size="sm" variant="subtle" color="red" onClick={() => setDeleteTarget(item)}><IconTrash size={14} /></ActionIcon>
-                  </Group>
+                  <ActionIcon size="sm" variant="subtle" onClick={() => setEditItem(item)}><IconEdit size={14} /></ActionIcon>
                 </Table.Td>
               </Table.Tr>
             ))

@@ -187,7 +187,6 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
   const [lookupOpen, setLookupOpen] = useState(false);
   const [detailItem, setDetailItem] = useState<AnyItem | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [deleteSelected, setDeleteSelected] = useState(false);
   const [columnsOpen, setColumnsOpen] = useState(false);
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -291,10 +290,25 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
   };
 
   const handleDeleteSelected = () => {
-    setItems(items.filter((i) => !selected.has(i.id)));
-    notifications.show({ message: t("notif_deleted"), color: "red" });
+    const removed = items.filter((i) => selected.has(i.id));
+    const remaining = items.filter((i) => !selected.has(i.id));
+    setItems(remaining);
     setSelected(new Set());
-    setDeleteSelected(false);
+    const notifId = crypto.randomUUID();
+    notifications.show({
+      id: notifId,
+      message: (
+        <Group justify="space-between" gap="xs">
+          <Text size="sm">{t("collection_delete_selected_body", { count: formatNumber(removed.length) })}</Text>
+          <Button size="compact-xs" variant="white" color="red" onClick={() => { setItems([...remaining, ...removed]); notifications.hide(notifId); }}>
+            {t("undo")}
+          </Button>
+        </Group>
+      ),
+      color: "red",
+      autoClose: 5000,
+      withCloseButton: true,
+    });
   };
 
   const handleLookupAdd = (partial: Partial<AnyItem>) => {
@@ -330,7 +344,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
             {filtered.length < items.length ? `${formatNumber(filtered.length)} / ${formatNumber(items.length)}` : formatNumber(items.length)}
           </Badge>
           {selected.size > 0 && (
-            <Button size="xs" color="red" variant="subtle" leftSection={<IconTrash size={13} />} onClick={() => setDeleteSelected(true)}>
+            <Button size="xs" color="red" variant="subtle" leftSection={<IconTrash size={13} />} onClick={handleDeleteSelected}>
               {t("collection_delete_selected", { count: formatNumber(selected.size) })}
             </Button>
           )}
@@ -481,11 +495,8 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
                             }
                           </Table.Td>
                         ))}
-                        <Table.Td style={{ width: 72 }} onClick={(e) => e.stopPropagation()}>
-                          <Group gap={4}>
-                            <ActionIcon size="sm" variant="subtle" onClick={() => setEditItem(item)}><IconEdit size={14} /></ActionIcon>
-                            <ActionIcon size="sm" variant="subtle" color="red" onClick={() => setDeleteTarget(item)}><IconTrash size={14} /></ActionIcon>
-                          </Group>
+                        <Table.Td style={{ width: 36 }} onClick={(e) => e.stopPropagation()}>
+                          <ActionIcon size="sm" variant="subtle" onClick={() => setEditItem(item)}><IconEdit size={14} /></ActionIcon>
                         </Table.Td>
                       </Table.Tr>
                     );
@@ -511,16 +522,6 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
       <DeleteConfirm opened={!!deleteTarget} title={(deleteTarget as { title: string })?.title ?? ""} onConfirm={handleDelete} onCancel={() => setDeleteTarget(null)} />
       <LookupModal kind={kind} opened={lookupOpen} onClose={() => setLookupOpen(false)} onAdd={handleLookupAdd} />
       <DetailDrawer item={detailItem} opened={!!detailItem} onClose={() => setDetailItem(null)} onEdit={() => setEditItem(detailItem)} />
-
-      <Modal opened={deleteSelected} onClose={() => setDeleteSelected(false)} title={t("collection_delete_selected_title")} centered size="sm">
-        <Stack gap="md">
-          <Text size="sm">{t("collection_delete_selected_body", { count: formatNumber(selected.size) })}</Text>
-          <Group justify="flex-end">
-            <Button variant="default" onClick={() => setDeleteSelected(false)}>{t("delete_cancel")}</Button>
-            <Button color="red" onClick={handleDeleteSelected}>{t("delete_confirm")}</Button>
-          </Group>
-        </Stack>
-      </Modal>
 
       {columnSettings && setColumnSettings && allColumnDefs && (
         <ColumnsModal

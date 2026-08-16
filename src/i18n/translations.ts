@@ -38,7 +38,7 @@ const translations = {
     collection_search_barcode: "Search / Barcode",
     collection_delete_selected: "Delete {count} selected",
     collection_delete_selected_title: "Delete selected",
-    collection_delete_selected_body: "Delete {count} selected items? This cannot be undone.",
+    collection_delete_selected_body: "{count} items deleted.",
 
     // Table columns
     col_title: "Title",
@@ -145,6 +145,7 @@ const translations = {
     delete_message: "Are you sure you want to delete {title}? This cannot be undone.",
     delete_confirm: "Delete",
     delete_cancel: "Cancel",
+    undo: "Undo",
     filter_reset: "Clear filters",
 
     // Notifications
@@ -309,7 +310,7 @@ const translations = {
     collection_search_barcode: "Recherche / Code-barres",
     collection_delete_selected: "Supprimer {count} sélectionnés",
     collection_delete_selected_title: "Supprimer la sélection",
-    collection_delete_selected_body: "Supprimer {count} éléments sélectionnés ? Cette action est irréversible.",
+    collection_delete_selected_body: "{count} élément(s) supprimé(s).",
 
     // Table columns
     col_title: "Titre",
@@ -416,6 +417,7 @@ const translations = {
     delete_message: "Voulez-vous vraiment supprimer {title} ? Cette action est irréversible.",
     delete_confirm: "Supprimer",
     delete_cancel: "Annuler",
+    undo: "Annuler",
     filter_reset: "Effacer les filtres",
 
     // Notifications
