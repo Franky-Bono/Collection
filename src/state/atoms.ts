@@ -1,6 +1,6 @@
 import { atomWithStorage } from "jotai/utils";
 import { atom } from "jotai";
-import type { Book, Comic, VideoGame, Movie, MusicAlbum, CustomCollectionType, CustomItem } from "@/types";
+import type { Book, Comic, VideoGame, Movie, MusicAlbum, CustomCollectionType, CustomItem, AnyItem } from "@/types";
 import type { Language } from "@/i18n/translations";
 
 export type ThousandSeparator = "," | "." | "";
@@ -36,6 +36,15 @@ export const comicsAtom = atomWithStorage<Comic[]>("collection-comics", []);
 export const videoGamesAtom = atomWithStorage<VideoGame[]>("collection-videogames", []);
 export const moviesAtom = atomWithStorage<Movie[]>("collection-movies", []);
 export const musicAtom = atomWithStorage<MusicAlbum[]>("collection-music", []);
+
+export interface TrashedEntry {
+  item: AnyItem | CustomItem;
+  kind: string;
+  typeId?: string;
+  deletedAt: string;
+}
+
+export const trashedItemsAtom = atomWithStorage<TrashedEntry[]>("collection-trashed", []);
 
 export const customTypesAtom = atomWithStorage<CustomCollectionType[]>(
   "collection-custom-types",

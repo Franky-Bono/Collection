@@ -2,10 +2,10 @@ import { ActionIcon, Box, NavLink, Text, Tooltip } from "@mantine/core";
 import {
   IconBook, IconBook2, IconChevronLeft, IconChevronRight,
   IconDeviceGamepad2, IconLayoutDashboard, IconMovie, IconMusic,
-  IconSettings, IconUpload,
+  IconSettings, IconTrash, IconUpload,
 } from "@tabler/icons-react";
 import { useAtom, useAtomValue } from "jotai";
-import { sidebarCollapsedAtom, customTypesAtom } from "@/state/atoms";
+import { sidebarCollapsedAtom, customTypesAtom, trashedItemsAtom } from "@/state/atoms";
 import { Link, useLocation } from "@tanstack/react-router";
 import * as styles from "./Sidebar.css";
 import { useT } from "@/i18n/useT";
@@ -30,6 +30,7 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useAtom(sidebarCollapsedAtom);
   const customTypes = useAtomValue(customTypesAtom);
   const location = useLocation();
+  const binCount = useAtomValue(trashedItemsAtom).length;
 
   return (
     <Box className={`${styles.nav} ${collapsed ? styles.navCollapsed : ""}`}>
@@ -84,6 +85,17 @@ export function Sidebar() {
       )}
 
       <Box style={{ marginTop: "auto" }}>
+        <Tooltip label={t("nav_bin")} disabled={!collapsed} position="right" withArrow>
+          <Link to="/bin" style={{ textDecoration: "none" }}>
+            <Box className={`${styles.link} ${collapsed ? styles.linkCollapsed : ""} ${location.pathname === "/bin" ? styles.active : ""}`} style={{ position: "relative" }}>
+              <IconTrash size={18} />
+              {!collapsed && <span style={{ flex: 1 }}>{t("nav_bin")}</span>}
+              {binCount > 0 && (
+                <span className={styles.indicator}>{binCount > 99 ? "99+" : binCount}</span>
+              )}
+            </Box>
+          </Link>
+        </Tooltip>
         {BOTTOM_ITEMS.map(({ to, icon, labelKey }) => {
           const isActive = location.pathname === to;
           return (

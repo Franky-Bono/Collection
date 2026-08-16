@@ -14,7 +14,8 @@ import { useT } from "@/i18n/useT";
 import { fetchImageAsBase64 } from "@/lib/imageUtils";
 import type { TranslationKey } from "@/i18n/translations";
 import { useFormatting } from "@/hooks/useFormatting";
-import type { MovieColumnSetting } from "@/state/atoms";
+import type { MovieColumnSetting, TrashedEntry } from "@/state/atoms";
+import { trashedItemsAtom } from "@/state/atoms";
 
 type CollectionKind = "books" | "comics" | "videogames" | "movies" | "music";
 
@@ -178,7 +179,13 @@ type SortKey = { key: string; dir: "asc" | "desc" };
 export function CollectionPage({ title, singular, icon, atom, kind, columns, titleWidth, columnSettings, allColumnDefs, setColumnSettings }: Props) {
   const t = useT();
   const { formatNumber } = useFormatting();
-  const [items, setItems] = useAtom(atom);
+  const [rawItems, setItems] = useAtom(atom);
+  const [trashed, setTrashed] = useAtom(trashedItemsAtom);
+  const trashedIds = useMemo(
+    () => new Set(trashed.filter((e) => e.kind === kind).map((e) => e.item.id)),
+    [trashed, kind],
+  );
+  const items = useMemo(() => rawItems.filter((i) => !trashedIds.has(i.id)), [rawItems, trashedIds]);
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [sortKeys, setSortKeys] = useState<SortKey[]>([]);
   const [addOpen, setAddOpen] = useState(false);
@@ -267,7 +274,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
       const base64 = await fetchImageAsBase64(item.coverUrl);
       finalItem = { ...item, coverUrl: base64 };
     }
-    setItems([...items, finalItem]);
+    setItems([...rawItems, finalItem]);
     notifications.show({ message: t("notif_added", { title: (item as { title: string }).title }), color: "green" });
   };
 
@@ -277,35 +284,43 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
       const base64 = await fetchImageAsBase64(item.coverUrl);
       finalItem = { ...item, coverUrl: base64 };
     }
-    setItems(items.map((i) => i.id === item.id ? finalItem : i));
+    setItems(rawItems.map((i) => i.id === item.id ? finalItem : i));
     notifications.show({ message: t("notif_updated"), color: "blue" });
     setEditItem(null);
   };
 
   const handleDelete = () => {
     if (!deleteTarget) return;
-    setItems(items.filter((i) => i.id !== deleteTarget.id));
-    notifications.show({ message: t("notif_deleted"), color: "red" });
+    setTrashed([...trashed, { item: deleteTarget, kind, deletedAt: new Date().toISOString() }]);
+    setItems(rawItems.filter((i) => i.id !== deleteTarget.id));
+    notifications.show({ message: t("notif_trashed"), color: "orange" });
     setDeleteTarget(null);
   };
 
   const handleDeleteSelected = () => {
-    const removed = items.filter((i) => selected.has(i.id));
-    const remaining = items.filter((i) => !selected.has(i.id));
+    const removed = rawItems.filter((i) => selected.has(i.id));
+    const remaining = rawItems.filter((i) => !selected.has(i.id));
+    const entries: TrashedEntry[] = removed.map((item) => ({ item, kind, deletedAt: new Date().toISOString() }));
     setItems(remaining);
+    setTrashed([...trashed, ...entries]);
     setSelected(new Set());
+    const removedIds = new Set(removed.map((i) => i.id));
     const notifId = crypto.randomUUID();
     notifications.show({
       id: notifId,
       message: (
         <Group justify="space-between" gap="xs">
           <Text size="sm">{t("collection_delete_selected_body", { count: formatNumber(removed.length) })}</Text>
-          <Button size="compact-xs" variant="white" color="red" onClick={() => { setItems([...remaining, ...removed]); notifications.hide(notifId); }}>
+          <Button size="compact-xs" variant="white" color="orange" onClick={() => {
+            setItems([...remaining, ...removed]);
+            setTrashed(trashed.filter((e) => !removedIds.has(e.item.id)));
+            notifications.hide(notifId);
+          }}>
             {t("undo")}
           </Button>
         </Group>
       ),
-      color: "red",
+      color: "orange",
       autoClose: 5000,
       withCloseButton: true,
     });

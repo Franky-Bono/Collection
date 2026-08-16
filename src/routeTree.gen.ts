@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BinRouteImport } from './routes/bin'
 import { Route as BooksRouteImport } from './routes/books'
 import { Route as ComicsRouteImport } from './routes/comics'
 import { Route as ImportRouteImport } from './routes/import'
@@ -22,6 +23,11 @@ import { Route as CustomTypeIdRouteImport } from './routes/custom.$typeId'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BinRoute = BinRouteImport.update({
+  id: '/bin',
+  path: '/bin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BooksRoute = BooksRouteImport.update({
@@ -67,6 +73,7 @@ const CustomTypeIdRoute = CustomTypeIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/bin': typeof BinRoute
   '/books': typeof BooksRoute
   '/comics': typeof ComicsRoute
   '/import': typeof ImportRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/bin': typeof BinRoute
   '/books': typeof BooksRoute
   '/comics': typeof ComicsRoute
   '/import': typeof ImportRoute
@@ -90,6 +98,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/bin': typeof BinRoute
   '/books': typeof BooksRoute
   '/comics': typeof ComicsRoute
   '/import': typeof ImportRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/bin'
     | '/books'
     | '/comics'
     | '/import'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/bin'
     | '/books'
     | '/comics'
     | '/import'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/bin'
     | '/books'
     | '/comics'
     | '/import'
@@ -137,6 +149,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BinRoute: typeof BinRoute
   BooksRoute: typeof BooksRoute
   ComicsRoute: typeof ComicsRoute
   ImportRoute: typeof ImportRoute
@@ -154,6 +167,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bin': {
+      id: '/bin'
+      path: '/bin'
+      fullPath: '/bin'
+      preLoaderRoute: typeof BinRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/books': {
@@ -217,6 +237,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BinRoute: BinRoute,
   BooksRoute: BooksRoute,
   ComicsRoute: ComicsRoute,
   ImportRoute: ImportRoute,

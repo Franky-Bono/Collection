@@ -152,6 +152,17 @@ const translations = {
     notif_added: "Added \"{title}\"",
     notif_updated: "Item updated",
     notif_deleted: "Item deleted",
+    notif_trashed: "Moved to recycle bin.",
+
+    // Recycle bin
+    nav_bin: "Recycle Bin",
+    bin_col_type: "Collection",
+    bin_col_deleted: "Deleted",
+    bin_empty: "Empty Bin",
+    bin_empty_state: "Recycle bin is empty.",
+    bin_restore: "Restore",
+    bin_restored: "Item restored.",
+    bin_emptied: "Bin emptied.",
 
     // Lookup modal
     lookup_title: "Search & add",
@@ -424,6 +435,17 @@ const translations = {
     notif_added: "\"{title}\" ajouté",
     notif_updated: "Élément mis à jour",
     notif_deleted: "Élément supprimé",
+    notif_trashed: "Déplacé vers la corbeille.",
+
+    // Corbeille
+    nav_bin: "Corbeille",
+    bin_col_type: "Collection",
+    bin_col_deleted: "Supprimé le",
+    bin_empty: "Vider la corbeille",
+    bin_empty_state: "La corbeille est vide.",
+    bin_restore: "Restaurer",
+    bin_restored: "Élément restauré.",
+    bin_emptied: "Corbeille vidée.",
 
     // Lookup modal
     lookup_title: "Rechercher et ajouter",

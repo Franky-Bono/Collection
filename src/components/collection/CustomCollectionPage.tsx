@@ -2,7 +2,7 @@ import { ActionIcon, Badge, Box, Button, Group, Table, Text, TextInput, Title } 
 import { notifications } from "@mantine/notifications";
 import { IconEdit, IconPlus, IconTrash } from "@tabler/icons-react";
 import { useAtom, useAtomValue } from "jotai";
-import { customTypesAtom, makeCustomItemsAtom } from "@/state/atoms";
+import { customTypesAtom, makeCustomItemsAtom, trashedItemsAtom } from "@/state/atoms";
 import { useMemo, useState } from "react";
 import { DeleteConfirm } from "./DeleteConfirm";
 import { useT } from "@/i18n/useT";
@@ -59,13 +59,15 @@ export function CustomCollectionPage({ typeId }: Props) {
   const collectionType = customTypes.find((ct) => ct.id === typeId);
   const itemsAtom = useMemo(() => makeCustomItemsAtom(typeId), [typeId]);
   const [items, setItems] = useAtom(itemsAtom);
+  const [trashed, setTrashed] = useAtom(trashedItemsAtom);
   const [search, setSearch] = useState("");
   const [editItem, setEditItem] = useState<CustomItem | null | "new">(null);
   const [deleteTarget, setDeleteTarget] = useState<CustomItem | null>(null);
 
   if (!collectionType) return <Text p="xl" c="dimmed">Collection not found.</Text>;
 
-  const filtered = items.filter((item) => item.title.toLowerCase().includes(search.toLowerCase()));
+  const visibleItems = items.filter((i) => !trashed.some((e) => e.typeId === typeId && e.item.id === i.id));
+  const filtered = visibleItems.filter((item) => item.title.toLowerCase().includes(search.toLowerCase()));
 
   const handleSave = (item: CustomItem) => {
     if (editItem === "new") {
@@ -80,8 +82,9 @@ export function CustomCollectionPage({ typeId }: Props) {
 
   const handleDelete = () => {
     if (!deleteTarget) return;
+    setTrashed([...trashed, { item: deleteTarget, kind: typeId, typeId, deletedAt: new Date().toISOString() }]);
     setItems(items.filter((i) => i.id !== deleteTarget.id));
-    notifications.show({ message: t("notif_deleted"), color: "red" });
+    notifications.show({ message: t("notif_trashed"), color: "orange" });
     setDeleteTarget(null);
   };
 
@@ -130,7 +133,7 @@ export function CustomCollectionPage({ typeId }: Props) {
             <Table.Tr>
               <Table.Td colSpan={collectionType.fields.length + 2}>
                 <Text c="dimmed" size="sm" ta="center" py="xl">
-                  {items.length === 0 ? t("collection_no_items", { title: collectionType.name }) : t("collection_no_results")}
+                  {visibleItems.length === 0 ? t("collection_no_items", { title: collectionType.name }) : t("collection_no_results")}
                 </Text>
               </Table.Td>
             </Table.Tr>
