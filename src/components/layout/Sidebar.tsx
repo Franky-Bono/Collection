@@ -18,7 +18,6 @@ const NAV_ITEMS = [
   { to: "/music",      icon: <IconMusic size={18} />,           labelKey: "nav_music" as const },
   { to: "/comics",     icon: <IconBook2 size={18} />,           labelKey: "nav_comics" as const },
   { to: "/videogames", icon: <IconDeviceGamepad2 size={18} />,  labelKey: "nav_videogames" as const },
-  { to: "/import",     icon: <IconUpload size={18} />,          labelKey: "nav_import" as const },
 ];
 
 const BOTTOM_ITEMS = [
@@ -93,6 +92,14 @@ export function Sidebar() {
               {binCount > 0 && (
                 <span className={styles.indicator}>{binCount > 99 ? "99+" : binCount}</span>
               )}
+            </Box>
+          </Link>
+        </Tooltip>
+        <Tooltip label={t("nav_import")} disabled={!collapsed} position="right" withArrow>
+          <Link to="/import" style={{ textDecoration: "none" }}>
+            <Box className={`${styles.link} ${collapsed ? styles.linkCollapsed : ""} ${location.pathname === "/import" ? styles.active : ""}`}>
+              <IconUpload size={18} />
+              {!collapsed && <span>{t("nav_import")}</span>}
             </Box>
           </Link>
         </Tooltip>
