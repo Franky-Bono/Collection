@@ -38,7 +38,7 @@ export const sidebarCollapsedAtom = atomWithStorage<boolean>(
 // API identical to the old atomWithStorage atoms so no consumers need changes.
 
 function makeCollectionAtom<T extends unknown[]>(key: string, def: T) {
-  const _async = atomWithStorage<T>(key, def, idbStorage<T>());
+  const _async = atomWithStorage<T>(key, def, idbStorage<T>(), { getOnInit: true });
   const _public = atom<T, [T | ((prev: T) => T)], void>(
     (get) => { const v = get(_async); return (v instanceof Promise ? def : v) as T; },
     (_get, set, update) => { set(_async, update as T); }
@@ -75,7 +75,8 @@ export const customTypesAtom  = _customTypes.atom;
 const _customItemsAsync = atomWithStorage<Record<string, CustomItem[]>>(
   "collection-custom-items",
   {},
-  idbStorage<Record<string, CustomItem[]>>()
+  idbStorage<Record<string, CustomItem[]>>(),
+  { getOnInit: true }
 );
 export const customItemsAtom = atom<Record<string, CustomItem[]>, [Record<string, CustomItem[]> | ((prev: Record<string, CustomItem[]>) => Record<string, CustomItem[]>)], void>(
   (get) => { const v = get(_customItemsAsync); return (v instanceof Promise ? {} : v) as Record<string, CustomItem[]>; },

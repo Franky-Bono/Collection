@@ -55,11 +55,11 @@ const FIELD_OPTIONS: Record<CollectionKind, string[]> = {
 function ImportPage() {
   const t = useT();
   const { formatNumber } = useFormatting();
-  const [, setBooks] = useAtom(booksAtom);
-  const [, setComics] = useAtom(comicsAtom);
-  const [, setVideoGames] = useAtom(videoGamesAtom);
-  const [, setMovies] = useAtom(moviesAtom);
-  const [, setMusic] = useAtom(musicAtom);
+  const [books, setBooks] = useAtom(booksAtom);
+  const [comics, setComics] = useAtom(comicsAtom);
+  const [videoGames, setVideoGames] = useAtom(videoGamesAtom);
+  const [movies, setMovies] = useAtom(moviesAtom);
+  const [music, setMusic] = useAtom(musicAtom);
 
   const [kind, setKind] = useState<CollectionKind>("movies");
   const [headers, setHeaders] = useState<string[]>([]);
@@ -135,11 +135,11 @@ function ImportPage() {
       };
 
       const items = allRows.map(makeItem);
-      if (kind === "books")      setBooks((prev) => [...prev, ...items as unknown as Book[]]);
-      if (kind === "comics")     setComics((prev) => [...prev, ...items as unknown as Comic[]]);
-      if (kind === "videogames") setVideoGames((prev) => [...prev, ...items as unknown as VideoGame[]]);
-      if (kind === "movies")     setMovies((prev) => [...prev, ...items as unknown as Movie[]]);
-      if (kind === "music")      setMusic((prev) => [...prev, ...items as unknown as MusicAlbum[]]);
+      if (kind === "books")      setBooks([...books, ...items as unknown as Book[]]);
+      if (kind === "comics")     setComics([...comics, ...items as unknown as Comic[]]);
+      if (kind === "videogames") setVideoGames([...videoGames, ...items as unknown as VideoGame[]]);
+      if (kind === "movies")     setMovies([...movies, ...items as unknown as Movie[]]);
+      if (kind === "music")      setMusic([...music, ...items as unknown as MusicAlbum[]]);
       notifications.show({ message: t("import_success", { count: formatNumber(items.length) }), color: "green" });
       setHeaders([]); setRows([]); setAllRows([]); setMapping({});
     } catch (err) {
