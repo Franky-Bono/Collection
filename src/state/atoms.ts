@@ -1,5 +1,5 @@
 import { atomWithStorage } from "jotai/utils";
-import { atom, type Atom } from "jotai";
+import { atom } from "jotai";
 import type { Book, Comic, VideoGame, Movie, MusicAlbum, CustomCollectionType, CustomItem, AnyItem } from "@/types";
 import type { Language } from "@/i18n/translations";
 import { idbStorage } from "@/storage/idb";
@@ -81,17 +81,6 @@ export const customItemsAtom = atom<Record<string, CustomItem[]>, [Record<string
   (get) => { const v = get(_customItemsAsync); return (v instanceof Promise ? {} : v) as Record<string, CustomItem[]>; },
   (_get, set, update) => { set(_customItemsAsync, update as Record<string, CustomItem[]>); }
 );
-
-// True once all IDB-backed atoms have resolved their initial load.
-// Used to prevent Drive sync from pushing empty collections before IDB is ready.
-export const idbReadyAtom = atom((get) => {
-  const allAsync: Atom<unknown>[] = [
-    _books.asyncAtom, _comics.asyncAtom, _videoGames.asyncAtom,
-    _movies.asyncAtom, _music.asyncAtom,
-    _trashed.asyncAtom, _customTypes.asyncAtom, _customItemsAsync,
-  ];
-  return allAsync.every((a) => !(get(a) instanceof Promise));
-});
 
 // Set to true once the initial Drive load (or skip) has completed.
 // Prevents auto-push from firing before Drive data has been pulled on startup.

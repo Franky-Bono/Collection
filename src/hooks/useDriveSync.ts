@@ -2,7 +2,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useCallback } from "react";
 import {
   booksAtom, comicsAtom, videoGamesAtom, moviesAtom, musicAtom,
-  customTypesAtom, customItemsAtom, idbReadyAtom, driveLoadDoneAtom,
+  customTypesAtom, customItemsAtom, driveLoadDoneAtom,
   driveClientIdAtom, driveSyncEnabledAtom, driveLastSyncAtom,
   driveSyncStatusAtom, driveUserAtom, drivePendingAtom,
 } from "@/state/atoms";
@@ -46,7 +46,7 @@ export function useDriveSync() {
   const music      = useAtomValue(musicAtom);
   const customTypes = useAtomValue(customTypesAtom);
   const customItems = useAtomValue(customItemsAtom);
-  const idbReady      = useAtomValue(idbReadyAtom);
+  const idbReady      = true; // atoms are pre-hydrated from IDB before React mounts
   const [driveLoadDone, setDriveLoadDone] = useAtom(driveLoadDoneAtom);
 
   useEffect(() => {
@@ -151,7 +151,7 @@ export function useDriveSync() {
       pushToDrive(snapshot);
     }, 2000);
     return () => { if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; } };
-  }, [books, comics, videoGames, movies, music, customTypes, customItems, enabled, driveUser, idbReady, driveLoadDone, pushToDrive]);
+  }, [books, comics, videoGames, movies, music, customTypes, customItems, enabled, driveUser, driveLoadDone, pushToDrive]);
 
   // Poll every 30s to pick up changes from other browsers
   useEffect(() => {
