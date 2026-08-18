@@ -2,7 +2,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useCallback } from "react";
 import {
   booksAtom, comicsAtom, videoGamesAtom, moviesAtom, musicAtom,
-  customTypesAtom, customItemsAtom, idbReadyAtom,
+  customTypesAtom, customItemsAtom, idbReadyAtom, driveLoadDoneAtom,
   driveClientIdAtom, driveSyncEnabledAtom, driveLastSyncAtom,
   driveSyncStatusAtom, driveUserAtom, drivePendingAtom,
 } from "@/state/atoms";
@@ -16,7 +16,6 @@ type Snapshot = CollectionData & { music: unknown[]; customItems: Record<string,
 
 // Module-level singletons shared across all hook instances
 let driveInitialized = false;
-let initialLoadDone = false;
 let isSyncing = false;
 let isLoadingFromDrive = false; // suppresses debounce push during Drive reads
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -47,7 +46,8 @@ export function useDriveSync() {
   const music      = useAtomValue(musicAtom);
   const customTypes = useAtomValue(customTypesAtom);
   const customItems = useAtomValue(customItemsAtom);
-  const idbReady   = useAtomValue(idbReadyAtom);
+  const idbReady      = useAtomValue(idbReadyAtom);
+  const [driveLoadDone, setDriveLoadDone] = useAtom(driveLoadDoneAtom);
 
   useEffect(() => {
     setStatusListener((s) => {
@@ -59,8 +59,7 @@ export function useDriveSync() {
   const loadFromDrive = useCallback(async () => {
     isLoadingFromDrive = true;
     const data = await readFromDrive();
-    initialLoadDone = true;
-    if (!data) { isLoadingFromDrive = false; return; }
+    if (!data) { isLoadingFromDrive = false; setDriveLoadDone(true); return; }
     if (Array.isArray(data.books))      setBooks(data.books);
     if (Array.isArray(data.comics))     setComics(data.comics);
     if (Array.isArray(data.videoGames)) setVideoGames(data.videoGames);
@@ -70,9 +69,10 @@ export function useDriveSync() {
     if (Array.isArray(data.customTypes)) setCustomTypes(data.customTypes);
     if (data.customItems && typeof data.customItems === "object") setCustomItems(data.customItems as Record<string, CustomItem[]>);
     setLastSync(new Date().toISOString());
+    setDriveLoadDone(true);
     // Clear flag after React has flushed the atom updates
     setTimeout(() => { isLoadingFromDrive = false; }, 100);
-  }, [setBooks, setComics, setVideoGames, setMovies, setMusic, setCustomTypes, setCustomItems, setLastSync]);
+  }, [setBooks, setComics, setVideoGames, setMovies, setMusic, setCustomTypes, setCustomItems, setLastSync, setDriveLoadDone]);
 
   const pushToDrive = useCallback(async (snapshot: Snapshot) => {
     if (!isSignedIn()) {
@@ -122,8 +122,7 @@ export function useDriveSync() {
   // Initial auth + load
   useEffect(() => {
     if (!enabled || !clientId || driveInitialized) {
-      if (!enabled || !clientId) initialLoadDone = true;
-      if (driveInitialized) setTimeout(() => { initialLoadDone = true; }, 3000);
+      if (!enabled || !clientId) setDriveLoadDone(true);
       return;
     }
     driveInitialized = true;
@@ -133,14 +132,14 @@ export function useDriveSync() {
         setDriveUser(getUser());
         await loadFromDrive();
       } catch {
-        initialLoadDone = true;
+        setDriveLoadDone(true);
       }
-    }).catch(() => { initialLoadDone = true; });
-  }, [enabled, clientId, loadFromDrive, setDriveUser, driveUser]);
+    }).catch(() => { setDriveLoadDone(true); });
+  }, [enabled, clientId, loadFromDrive, setDriveUser, driveUser, setDriveLoadDone]);
 
   // Debounced auto-push on any collection change
   useEffect(() => {
-    if (!enabled || !driveUser || !initialLoadDone || isLoadingFromDrive || !idbReady) return;
+    if (!enabled || !driveUser || !driveLoadDone || isLoadingFromDrive || !idbReady) return;
     const snapshot: Snapshot = {
       books, comics, videoGames, movies, music: music as unknown[],
       customTypes, customItems: customItems as Record<string, CustomItem[]>,
@@ -152,7 +151,7 @@ export function useDriveSync() {
       pushToDrive(snapshot);
     }, 2000);
     return () => { if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; } };
-  }, [books, comics, videoGames, movies, music, customTypes, customItems, enabled, driveUser, idbReady, pushToDrive]);
+  }, [books, comics, videoGames, movies, music, customTypes, customItems, enabled, driveUser, idbReady, driveLoadDone, pushToDrive]);
 
   // Poll every 30s to pick up changes from other browsers
   useEffect(() => {
@@ -197,14 +196,14 @@ export function useDriveSync() {
     signOut();
     setDriveUser(null);
     setEnabled(false);
+    setDriveLoadDone(false);
     driveInitialized = false;
-    initialLoadDone = false;
     isLoadingFromDrive = false;
     pendingSnapshot = null;
     setPending(false);
     if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; }
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-  }, [setEnabled, setDriveUser]);
+  }, [setEnabled, setDriveUser, setDriveLoadDone]);
 
   return { syncNow, connect, disconnect, resetDriveFile, user: driveUser, lastSync, enabled, signedIn: isSignedIn() };
 }

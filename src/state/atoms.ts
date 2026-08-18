@@ -93,6 +93,10 @@ export const idbReadyAtom = atom((get) => {
   return allAsync.every((a) => !(get(a) instanceof Promise));
 });
 
+// Set to true once the initial Drive load (or skip) has completed.
+// Prevents auto-push from firing before Drive data has been pulled on startup.
+export const driveLoadDoneAtom = atom(false);
+
 export function makeCustomItemsAtom(typeId: string) {
   return atom(
     (get) => get(customItemsAtom)[typeId] ?? [],
