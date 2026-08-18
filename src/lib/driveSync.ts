@@ -147,23 +147,29 @@ async function findFile(): Promise<string | null> {
   return data.files?.[0]?.id ?? null;
 }
 
-export async function readFromDrive(): Promise<(CollectionData & { customItems?: Record<string, unknown[]> }) | null> {
-  if (!_accessToken || !_gapiReady) return null;
+export type DriveReadResult =
+  | { status: "ok"; data: CollectionData & { customItems?: Record<string, unknown[]> } }
+  | { status: "empty" }   // signed in, no file yet
+  | { status: "unauth" }  // not signed in or GAPI not ready
+  | { status: "error" };  // network/API failure
+
+export async function readFromDrive(): Promise<DriveReadResult> {
+  if (!_accessToken || !_gapiReady) return { status: "unauth" };
   setStatus("syncing");
   try {
     _fileId = await findFile();
-    if (!_fileId) { setStatus("idle"); return null; }
+    if (!_fileId) { setStatus("idle"); return { status: "empty" }; }
     const resp = await fetch(
       `https://www.googleapis.com/drive/v3/files/${_fileId}?alt=media`,
       { headers: { Authorization: `Bearer ${_accessToken}` } }
     );
-    if (!resp.ok) { setStatus("error", "Read failed"); return null; }
+    if (!resp.ok) { setStatus("error", "Read failed"); return { status: "error" }; }
     const data = await resp.json() as CollectionData & { customItems?: Record<string, unknown[]> };
     setStatus("idle");
-    return data;
+    return { status: "ok", data };
   } catch (e) {
     setStatus("error", String(e));
-    return null;
+    return { status: "error" };
   }
 }
 

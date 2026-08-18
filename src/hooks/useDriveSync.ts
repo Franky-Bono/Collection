@@ -59,8 +59,21 @@ export function useDriveSync() {
 
   const loadFromDrive = useCallback(async () => {
     isLoadingFromDrive = true;
-    const data = await readFromDrive();
-    if (!data) { isLoadingFromDrive = false; setDriveLoadDone(true); return; }
+    const result = await readFromDrive();
+    if (result.status === "unauth" || result.status === "error") {
+      // Can't reach Drive — do not allow push, user must re-auth via Sync Now
+      isLoadingFromDrive = false;
+      setDriveLoadDone(true);
+      return;
+    }
+    if (result.status === "empty") {
+      // Signed in but no file yet — safe to push new data
+      isLoadingFromDrive = false;
+      driveLoadSucceeded = true;
+      setDriveLoadDone(true);
+      return;
+    }
+    const data = result.data;
     if (Array.isArray(data.books))      setBooks(data.books);
     if (Array.isArray(data.comics))     setComics(data.comics);
     if (Array.isArray(data.videoGames)) setVideoGames(data.videoGames);
