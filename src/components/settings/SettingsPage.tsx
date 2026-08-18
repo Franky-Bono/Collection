@@ -126,8 +126,8 @@ export function SettingsPage() {
     notifications.show({ message: t("settings_password_removed"), color: "blue" });
   };
 
-  const handleExport = () => {
-    exportJSON();
+  const handleExport = async () => {
+    await exportJSON();
     notifications.show({ message: t("settings_export_success"), color: "green" });
   };
 

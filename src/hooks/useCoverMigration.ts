@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { getFromIDB, setInIDB } from "@/storage/idb";
 
 const MAX_WIDTH = 200;
 const JPEG_QUALITY = 0.7;
@@ -35,10 +36,8 @@ export function useCoverMigration() {
 
     async function run() {
       for (const key of COLLECTION_KEYS) {
-        const raw = localStorage.getItem(key);
-        if (!raw) continue;
-        let items: Array<Record<string, unknown>>;
-        try { items = JSON.parse(raw); } catch { continue; }
+        const items = await getFromIDB<Array<Record<string, unknown>>>(key, []);
+        if (items.length === 0) continue;
 
         let changed = false;
         for (const item of items) {
@@ -47,7 +46,6 @@ export function useCoverMigration() {
             item.coverUrl = await compressBase64(cover);
             changed = true;
           } else if (cover?.startsWith("data:image/jpeg")) {
-            // Already JPEG but may be full-res — recompress if large
             if (cover.length > 50_000) {
               item.coverUrl = await compressBase64(cover);
               changed = true;
@@ -56,11 +54,7 @@ export function useCoverMigration() {
         }
 
         if (changed) {
-          try {
-            localStorage.setItem(key, JSON.stringify(items));
-          } catch {
-            // If still over quota, skip this collection
-          }
+          await setInIDB(key, items);
         }
 
         // Yield to the browser between collections

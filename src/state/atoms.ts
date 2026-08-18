@@ -2,6 +2,7 @@ import { atomWithStorage } from "jotai/utils";
 import { atom } from "jotai";
 import type { Book, Comic, VideoGame, Movie, MusicAlbum, CustomCollectionType, CustomItem, AnyItem } from "@/types";
 import type { Language } from "@/i18n/translations";
+import { idbStorage } from "@/storage/idb";
 
 export type ThousandSeparator = "," | "." | "";
 export type DateFormat = "DD/MM/YYYY" | "MM/DD/YYYY" | "YYYY-MM-DD";
@@ -31,11 +32,24 @@ export const sidebarCollapsedAtom = atomWithStorage<boolean>(
   false,
 );
 
-export const booksAtom = atomWithStorage<Book[]>("collection-books", []);
-export const comicsAtom = atomWithStorage<Comic[]>("collection-comics", []);
-export const videoGamesAtom = atomWithStorage<VideoGame[]>("collection-videogames", []);
-export const moviesAtom = atomWithStorage<Movie[]>("collection-movies", []);
-export const musicAtom = atomWithStorage<MusicAlbum[]>("collection-music", []);
+// --- IDB-backed collection atoms ---
+// Each uses a private async atom backed by IndexedDB, then a derived writable
+// atom that returns [] while the IDB Promise is pending. This keeps the public
+// API identical to the old atomWithStorage atoms so no consumers need changes.
+
+function makeCollectionAtom<T extends unknown[]>(key: string, def: T) {
+  const _async = atomWithStorage<T>(key, def, idbStorage<T>());
+  return atom<T, [T | ((prev: T) => T)], void>(
+    (get) => { const v = get(_async); return (v instanceof Promise ? def : v) as T; },
+    (_get, set, update) => { set(_async, update as T); }
+  );
+}
+
+export const booksAtom      = makeCollectionAtom<Book[]>("collection-books", []);
+export const comicsAtom     = makeCollectionAtom<Comic[]>("collection-comics", []);
+export const videoGamesAtom = makeCollectionAtom<VideoGame[]>("collection-videogames", []);
+export const moviesAtom     = makeCollectionAtom<Movie[]>("collection-movies", []);
+export const musicAtom      = makeCollectionAtom<MusicAlbum[]>("collection-music", []);
 
 export interface TrashedEntry {
   item: AnyItem | CustomItem;
@@ -44,16 +58,19 @@ export interface TrashedEntry {
   deletedAt: string;
 }
 
-export const trashedItemsAtom = atomWithStorage<TrashedEntry[]>("collection-trashed", []);
+export const trashedItemsAtom = makeCollectionAtom<TrashedEntry[]>("collection-trashed", []);
 
-export const customTypesAtom = atomWithStorage<CustomCollectionType[]>(
-  "collection-custom-types",
-  [],
-);
+export const customTypesAtom = makeCollectionAtom<CustomCollectionType[]>("collection-custom-types", []);
 
-export const customItemsAtom = atomWithStorage<Record<string, CustomItem[]>>(
+// customItemsAtom uses a Record, not an array — handle separately
+const _customItemsAsync = atomWithStorage<Record<string, CustomItem[]>>(
   "collection-custom-items",
   {},
+  idbStorage<Record<string, CustomItem[]>>()
+);
+export const customItemsAtom = atom<Record<string, CustomItem[]>, [Record<string, CustomItem[]> | ((prev: Record<string, CustomItem[]>) => Record<string, CustomItem[]>)], void>(
+  (get) => { const v = get(_customItemsAsync); return (v instanceof Promise ? {} : v) as Record<string, CustomItem[]>; },
+  (_get, set, update) => { set(_customItemsAsync, update as Record<string, CustomItem[]>); }
 );
 
 export function makeCustomItemsAtom(typeId: string) {
