@@ -139,14 +139,15 @@ export function SettingsPage() {
       const file = input.files?.[0];
       if (!file) return;
       try {
-        const data: CollectionData = await importJSON(file);
-        setBooks(data.books);
-        setComics(data.comics);
-        setVideoGames(data.videoGames);
-        setMovies(data.movies);
-        if ((data as CollectionData & { music?: typeof data.books }).music) {
-          setMusic((data as CollectionData & { music: typeof data.books }).music as never);
-        }
+        const data = await importJSON(file);
+        if (Array.isArray(data.books))      setBooks(data.books);
+        if (Array.isArray(data.comics))     setComics(data.comics);
+        if (Array.isArray(data.videoGames)) setVideoGames(data.videoGames);
+        if (Array.isArray(data.movies))     setMovies(data.movies);
+        if (Array.isArray((data as {music?: unknown}).music)) setMusic((data as unknown as {music: never}).music);
+        if (Array.isArray(data.customTypes)) setCustomTypes(data.customTypes);
+        if (data.customItems && typeof data.customItems === "object" && !Array.isArray(data.customItems))
+          setCustomItems(data.customItems as Record<string, never>);
         notifications.show({ message: t("settings_import_success"), color: "green" });
       } catch {
         notifications.show({ message: t("settings_import_error"), color: "red" });
