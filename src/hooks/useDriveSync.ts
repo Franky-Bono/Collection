@@ -2,7 +2,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useCallback } from "react";
 import {
   booksAtom, comicsAtom, videoGamesAtom, moviesAtom, musicAtom,
-  customTypesAtom, customItemsAtom,
+  customTypesAtom, customItemsAtom, idbReadyAtom,
   driveClientIdAtom, driveSyncEnabledAtom, driveLastSyncAtom,
   driveSyncStatusAtom, driveUserAtom, drivePendingAtom,
 } from "@/state/atoms";
@@ -47,6 +47,7 @@ export function useDriveSync() {
   const music      = useAtomValue(musicAtom);
   const customTypes = useAtomValue(customTypesAtom);
   const customItems = useAtomValue(customItemsAtom);
+  const idbReady   = useAtomValue(idbReadyAtom);
 
   useEffect(() => {
     setStatusListener((s) => {
@@ -139,7 +140,7 @@ export function useDriveSync() {
 
   // Debounced auto-push on any collection change
   useEffect(() => {
-    if (!enabled || !driveUser || !initialLoadDone || isLoadingFromDrive) return;
+    if (!enabled || !driveUser || !initialLoadDone || isLoadingFromDrive || !idbReady) return;
     const snapshot: Snapshot = {
       books, comics, videoGames, movies, music: music as unknown[],
       customTypes, customItems: customItems as Record<string, CustomItem[]>,
@@ -151,7 +152,7 @@ export function useDriveSync() {
       pushToDrive(snapshot);
     }, 2000);
     return () => { if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; } };
-  }, [books, comics, videoGames, movies, music, customTypes, customItems, enabled, driveUser, pushToDrive]);
+  }, [books, comics, videoGames, movies, music, customTypes, customItems, enabled, driveUser, idbReady, pushToDrive]);
 
   // Poll every 30s to pick up changes from other browsers
   useEffect(() => {

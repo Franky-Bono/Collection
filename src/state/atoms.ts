@@ -1,5 +1,5 @@
 import { atomWithStorage } from "jotai/utils";
-import { atom } from "jotai";
+import { atom, type Atom } from "jotai";
 import type { Book, Comic, VideoGame, Movie, MusicAlbum, CustomCollectionType, CustomItem, AnyItem } from "@/types";
 import type { Language } from "@/i18n/translations";
 import { idbStorage } from "@/storage/idb";
@@ -39,17 +39,24 @@ export const sidebarCollapsedAtom = atomWithStorage<boolean>(
 
 function makeCollectionAtom<T extends unknown[]>(key: string, def: T) {
   const _async = atomWithStorage<T>(key, def, idbStorage<T>());
-  return atom<T, [T | ((prev: T) => T)], void>(
+  const _public = atom<T, [T | ((prev: T) => T)], void>(
     (get) => { const v = get(_async); return (v instanceof Promise ? def : v) as T; },
     (_get, set, update) => { set(_async, update as T); }
   );
+  return { atom: _public, asyncAtom: _async };
 }
 
-export const booksAtom      = makeCollectionAtom<Book[]>("collection-books", []);
-export const comicsAtom     = makeCollectionAtom<Comic[]>("collection-comics", []);
-export const videoGamesAtom = makeCollectionAtom<VideoGame[]>("collection-videogames", []);
-export const moviesAtom     = makeCollectionAtom<Movie[]>("collection-movies", []);
-export const musicAtom      = makeCollectionAtom<MusicAlbum[]>("collection-music", []);
+const _books      = makeCollectionAtom<Book[]>("collection-books", []);
+const _comics     = makeCollectionAtom<Comic[]>("collection-comics", []);
+const _videoGames = makeCollectionAtom<VideoGame[]>("collection-videogames", []);
+const _movies     = makeCollectionAtom<Movie[]>("collection-movies", []);
+const _music      = makeCollectionAtom<MusicAlbum[]>("collection-music", []);
+
+export const booksAtom      = _books.atom;
+export const comicsAtom     = _comics.atom;
+export const videoGamesAtom = _videoGames.atom;
+export const moviesAtom     = _movies.atom;
+export const musicAtom      = _music.atom;
 
 export interface TrashedEntry {
   item: AnyItem | CustomItem;
@@ -58,9 +65,11 @@ export interface TrashedEntry {
   deletedAt: string;
 }
 
-export const trashedItemsAtom = makeCollectionAtom<TrashedEntry[]>("collection-trashed", []);
+const _trashed     = makeCollectionAtom<TrashedEntry[]>("collection-trashed", []);
+const _customTypes = makeCollectionAtom<CustomCollectionType[]>("collection-custom-types", []);
 
-export const customTypesAtom = makeCollectionAtom<CustomCollectionType[]>("collection-custom-types", []);
+export const trashedItemsAtom = _trashed.atom;
+export const customTypesAtom  = _customTypes.atom;
 
 // customItemsAtom uses a Record, not an array — handle separately
 const _customItemsAsync = atomWithStorage<Record<string, CustomItem[]>>(
@@ -72,6 +81,17 @@ export const customItemsAtom = atom<Record<string, CustomItem[]>, [Record<string
   (get) => { const v = get(_customItemsAsync); return (v instanceof Promise ? {} : v) as Record<string, CustomItem[]>; },
   (_get, set, update) => { set(_customItemsAsync, update as Record<string, CustomItem[]>); }
 );
+
+// True once all IDB-backed atoms have resolved their initial load.
+// Used to prevent Drive sync from pushing empty collections before IDB is ready.
+export const idbReadyAtom = atom((get) => {
+  const allAsync: Atom<unknown>[] = [
+    _books.asyncAtom, _comics.asyncAtom, _videoGames.asyncAtom,
+    _movies.asyncAtom, _music.asyncAtom,
+    _trashed.asyncAtom, _customTypes.asyncAtom, _customItemsAsync,
+  ];
+  return allAsync.every((a) => !(get(a) instanceof Promise));
+});
 
 export function makeCustomItemsAtom(typeId: string) {
   return atom(
