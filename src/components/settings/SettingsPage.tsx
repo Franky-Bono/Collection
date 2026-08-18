@@ -148,7 +148,6 @@ export function SettingsPage() {
           setMusic((data as CollectionData & { music: typeof data.books }).music as never);
         }
         notifications.show({ message: t("settings_import_success"), color: "green" });
-        window.location.reload();
       } catch {
         notifications.show({ message: t("settings_import_error"), color: "red" });
       }
