@@ -18,6 +18,7 @@ type Snapshot = CollectionData & { music: unknown[]; customItems: Record<string,
 let driveInitialized = false;
 let isSyncing = false;
 let isLoadingFromDrive = false; // suppresses debounce push during Drive reads
+let driveLoadSucceeded = false; // true if we successfully pulled from Drive on startup
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 let pendingSnapshot: Snapshot | null = null; // queued push waiting for auth
@@ -69,8 +70,8 @@ export function useDriveSync() {
     if (Array.isArray(data.customTypes)) setCustomTypes(data.customTypes);
     if (data.customItems && typeof data.customItems === "object") setCustomItems(data.customItems as Record<string, CustomItem[]>);
     setLastSync(new Date().toISOString());
+    driveLoadSucceeded = true;
     setDriveLoadDone(true);
-    // Clear flag after React has flushed the atom updates
     setTimeout(() => { isLoadingFromDrive = false; }, 100);
   }, [setBooks, setComics, setVideoGames, setMovies, setMusic, setCustomTypes, setCustomItems, setLastSync, setDriveLoadDone]);
 
@@ -139,7 +140,7 @@ export function useDriveSync() {
 
   // Debounced auto-push on any collection change
   useEffect(() => {
-    if (!enabled || !driveUser || !driveLoadDone || isLoadingFromDrive || !idbReady) return;
+    if (!enabled || !driveUser || !driveLoadDone || !driveLoadSucceeded || isLoadingFromDrive) return;
     const snapshot: Snapshot = {
       books, comics, videoGames, movies, music: music as unknown[],
       customTypes, customItems: customItems as Record<string, CustomItem[]>,
@@ -189,6 +190,7 @@ export function useDriveSync() {
     await signIn();
     setDriveUser(getUser());
     setEnabled(true);
+    driveLoadSucceeded = false;
     await loadFromDrive();
   }, [setEnabled, setDriveUser, loadFromDrive]);
 
@@ -198,6 +200,7 @@ export function useDriveSync() {
     setEnabled(false);
     setDriveLoadDone(false);
     driveInitialized = false;
+    driveLoadSucceeded = false;
     isLoadingFromDrive = false;
     pendingSnapshot = null;
     setPending(false);
