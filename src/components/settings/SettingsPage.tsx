@@ -362,16 +362,6 @@ export function SettingsPage() {
                 {t("settings_export")}
               </Button>
             </Group>
-            <Divider />
-            <Group justify="space-between">
-              <Stack gap={2}>
-                <Text size="sm">{t("settings_import_label")}</Text>
-                <Text size="xs" c="dimmed">{t("settings_import_hint")}</Text>
-              </Stack>
-              <Button variant="default" leftSection={<IconUpload size={16} />} onClick={handleImport}>
-                {t("settings_import")}
-              </Button>
-            </Group>
           </Stack>
         </Card>
 
@@ -392,6 +382,19 @@ export function SettingsPage() {
               onChange={(v) => { setDeleteAllTarget(v); setDeleteAllConfirm(""); }}
               style={{ width: 180 }}
             />
+          </Group>
+        </Card>
+
+        {/* Import */}
+        <Card withBorder>
+          <Group justify="space-between">
+            <Stack gap={2}>
+              <Text fw={600}>{t("settings_import_label")}</Text>
+              <Text size="xs" c="dimmed">{t("settings_import_hint")}</Text>
+            </Stack>
+            <Button variant="default" leftSection={<IconUpload size={16} />} onClick={handleImport}>
+              {t("settings_import")}
+            </Button>
           </Group>
         </Card>
       </Stack>
