@@ -2,7 +2,7 @@ import { atomWithStorage } from "jotai/utils";
 import { atom } from "jotai";
 import type { Book, Comic, VideoGame, Movie, MusicAlbum, CustomCollectionType, CustomItem, AnyItem } from "@/types";
 import type { Language } from "@/i18n/translations";
-import { idbStorage } from "@/storage/idb";
+import { setInIDB } from "@/storage/idb";
 
 export type ThousandSeparator = "," | "." | "";
 export type DateFormat = "DD/MM/YYYY" | "MM/DD/YYYY" | "YYYY-MM-DD";
@@ -38,12 +38,16 @@ export const sidebarCollapsedAtom = atomWithStorage<boolean>(
 // API identical to the old atomWithStorage atoms so no consumers need changes.
 
 function makeCollectionAtom<T extends unknown[]>(key: string, def: T) {
-  const _async = atomWithStorage<T>(key, def, idbStorage<T>(), { getOnInit: true });
+  const base = atom<T>(def);
   const _public = atom<T, [T | ((prev: T) => T)], void>(
-    (get) => { const v = get(_async); return (v instanceof Promise ? def : v) as T; },
-    (_get, set, update) => { set(_async, update as T); }
+    (get) => get(base),
+    (get, set, update) => {
+      const next = typeof update === "function" ? update(get(base)) : update;
+      set(base, next);
+      setInIDB(key, next);
+    }
   );
-  return { atom: _public, asyncAtom: _async };
+  return { atom: _public, asyncAtom: base };
 }
 
 const _books      = makeCollectionAtom<Book[]>("collection-books", []);
@@ -72,15 +76,18 @@ export const trashedItemsAtom = _trashed.atom;
 export const customTypesAtom  = _customTypes.atom;
 
 // customItemsAtom uses a Record, not an array — handle separately
-const _customItemsAsync = atomWithStorage<Record<string, CustomItem[]>>(
-  "collection-custom-items",
-  {},
-  idbStorage<Record<string, CustomItem[]>>(),
-  { getOnInit: true }
-);
-export const customItemsAtom = atom<Record<string, CustomItem[]>, [Record<string, CustomItem[]> | ((prev: Record<string, CustomItem[]>) => Record<string, CustomItem[]>)], void>(
-  (get) => { const v = get(_customItemsAsync); return (v instanceof Promise ? {} : v) as Record<string, CustomItem[]>; },
-  (_get, set, update) => { set(_customItemsAsync, update as Record<string, CustomItem[]>); }
+const _customItemsBase = atom<Record<string, CustomItem[]>>({});
+export const customItemsAtom = atom<
+  Record<string, CustomItem[]>,
+  [Record<string, CustomItem[]> | ((prev: Record<string, CustomItem[]>) => Record<string, CustomItem[]>)],
+  void
+>(
+  (get) => get(_customItemsBase),
+  (get, set, update) => {
+    const next = typeof update === "function" ? update(get(_customItemsBase)) : update;
+    set(_customItemsBase, next);
+    setInIDB("collection-custom-items", next);
+  }
 );
 
 // Set to true once the initial Drive load (or skip) has completed.
