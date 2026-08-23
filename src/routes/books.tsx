@@ -1,11 +1,12 @@
 import { IconBook } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { CollectionPage, FormatBadge, StatusBadge, getStatusLabel, getFormatLabel } from "@/components/collection/CollectionPage";
-import { booksAtom, bookColumnsAtom } from "@/state/atoms";
+import { booksAtom, bookColumnsAtom, customColumnsAtom } from "@/state/atoms";
 import type { Book } from "@/types";
 import { useT } from "@/i18n/useT";
 import { useAtom } from "jotai";
 import { Text } from "@mantine/core";
+import type { CustomColumnDef } from "@/state/atoms";
 
 export const Route = createFileRoute("/books")({
   component: BooksPage,
@@ -14,8 +15,10 @@ export const Route = createFileRoute("/books")({
 function BooksPage() {
   const t = useT();
   const [bookColumns, setBookColumns] = useAtom(bookColumnsAtom);
+  const [customColumns, setCustomColumns] = useAtom(customColumnsAtom);
+  const kindCustom: CustomColumnDef[] = customColumns["books"] ?? [];
 
-  const ALL_COLUMNS = [
+  const BUILTIN_COLUMNS = [
     { key: "author",    label: t("col_author"),    width: 200 },
     { key: "publisher", label: t("col_publisher"), width: 140 },
     { key: "genre",    label: t("col_genre"),    width: 120 },
@@ -30,6 +33,11 @@ function BooksPage() {
     { key: "notes",    label: t("col_notes"),    width: 200, render: (item: Book) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
   ] as const;
 
+  const ALL_COLUMNS = [
+    ...BUILTIN_COLUMNS,
+    ...kindCustom.map((c) => ({ key: c.key, label: c.label, width: c.width })),
+  ];
+
   const mergedColumns = [
     ...bookColumns.filter(s => ALL_COLUMNS.some(c => c.key === s.key)),
     ...ALL_COLUMNS.filter(c => !bookColumns.some(s => s.key === c.key)).map(c => ({ key: c.key, visible: false })),
@@ -38,7 +46,17 @@ function BooksPage() {
   const columns = mergedColumns
     .filter((s) => s.visible)
     .map((s) => ALL_COLUMNS.find((c) => c.key === s.key))
-    .filter(Boolean) as typeof ALL_COLUMNS[number][];
+    .filter(Boolean) as (typeof ALL_COLUMNS[number])[];
+
+  const handleAddCustom = (col: CustomColumnDef) => {
+    setCustomColumns((prev) => ({ ...prev, books: [...(prev["books"] ?? []), col] }));
+    setBookColumns((prev) => [...prev, { key: col.key, visible: true }]);
+  };
+
+  const handleDeleteCustom = (key: string) => {
+    setCustomColumns((prev) => ({ ...prev, books: (prev["books"] ?? []).filter((c) => c.key !== key) }));
+    setBookColumns((prev) => prev.filter((s) => s.key !== key));
+  };
 
   return (
     <CollectionPage
@@ -51,6 +69,9 @@ function BooksPage() {
       columnSettings={mergedColumns}
       allColumnDefs={ALL_COLUMNS.map((c) => ({ key: c.key, label: c.label }))}
       setColumnSettings={setBookColumns}
+      customColumnDefs={kindCustom}
+      onAddCustomColumn={handleAddCustom}
+      onDeleteCustomColumn={handleDeleteCustom}
     />
   );
 }

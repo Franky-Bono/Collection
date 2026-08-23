@@ -135,6 +135,11 @@ export function makeSubCollectionItemsAtom(collectionId: string) {
 
 export const sidebarExpandedAtom = atomWithStorage<string[]>("collection-sidebar-expanded", []);
 
+export const categoryOrderAtom = atomWithStorage<string[]>(
+  "collection-category-order",
+  ["movies", "books", "music", "comics", "videogames"],
+);
+
 // Per-sub-collection column settings — Record<subCollectionId, MovieColumnSetting[]>
 const _subColColumnsBase = atom<Record<string, MovieColumnSetting[]>>({});
 export const subCollectionColumnsAtom = atom<
@@ -243,4 +248,12 @@ export const DEFAULT_MUSIC_COLUMNS: MovieColumnSetting[] = [
 export const musicColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
   "collection-music-columns",
   DEFAULT_MUSIC_COLUMNS,
+);
+
+export interface CustomColumnDef { key: string; label: string; width: number; }
+
+// Extra user-defined columns per collection kind
+export const customColumnsAtom = atomWithStorage<Record<string, CustomColumnDef[]>>(
+  "collection-custom-columns",
+  {},
 );

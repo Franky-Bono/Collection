@@ -1,4 +1,4 @@
-import { ActionIcon, Badge, Box, Button, Card, Checkbox, Group, Modal, Table, Text, TextInput, Stack, UnstyledButton, Switch, Tooltip, Select } from "@mantine/core";
+import { ActionIcon, Badge, Box, Button, Card, Checkbox, Group, Modal, Table, Text, TextInput, Stack, UnstyledButton, Switch, Tooltip, Select, NumberInput } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconBarcode, IconChevronDown, IconChevronUp, IconColumns, IconCopy, IconEdit, IconGripVertical, IconPlus, IconSelector, IconTrash, IconX } from "@tabler/icons-react";
 import type { WritableAtom } from "jotai";
@@ -14,7 +14,7 @@ import { useT } from "@/i18n/useT";
 import { fetchImageAsBase64 } from "@/lib/imageUtils";
 import type { TranslationKey } from "@/i18n/translations";
 import { useFormatting } from "@/hooks/useFormatting";
-import type { MovieColumnSetting, TrashedEntry } from "@/state/atoms";
+import type { MovieColumnSetting, TrashedEntry, CustomColumnDef } from "@/state/atoms";
 import { trashedItemsAtom, subCollectionsAtom, subCollectionItemsAtom, booksAtom, comicsAtom, videoGamesAtom, moviesAtom, musicAtom } from "@/state/atoms";
 
 interface ColumnDef {
@@ -38,20 +38,29 @@ interface Props {
   setColumnSettings?: (s: MovieColumnSetting[]) => void;
   subCollectionId?: string;
   extraHeaderActions?: React.ReactNode;
+  customColumnDefs?: CustomColumnDef[];
+  onAddCustomColumn?: (col: CustomColumnDef) => void;
+  onDeleteCustomColumn?: (key: string) => void;
 }
 
-function ColumnsModal({ opened, onClose, settings, allDefs, onChange }: {
+function ColumnsModal({ opened, onClose, settings, allDefs, onChange, customDefs, onAddCustom, onDeleteCustom }: {
   opened: boolean;
   onClose: () => void;
   settings: MovieColumnSetting[];
   allDefs: { key: string; label: string }[];
   onChange: (s: MovieColumnSetting[]) => void;
+  customDefs?: CustomColumnDef[];
+  onAddCustom?: (col: CustomColumnDef) => void;
+  onDeleteCustom?: (key: string) => void;
 }) {
   const t = useT();
   const [draft, setDraft] = useState<MovieColumnSetting[]>(settings);
   const dragIndex = useRef<number | null>(null);
+  const [newColOpen, setNewColOpen] = useState(false);
+  const [newColLabel, setNewColLabel] = useState("");
+  const [newColWidth, setNewColWidth] = useState<number>(120);
 
-  useEffect(() => { if (opened) setDraft(settings); }, [opened]);
+  useEffect(() => { if (opened) { setDraft(settings); setNewColOpen(false); setNewColLabel(""); setNewColWidth(120); } }, [opened]);
 
   const toggle = (key: string) =>
     setDraft((prev) => prev.map((s) => s.key === key ? { ...s, visible: !s.visible } : s));
@@ -71,6 +80,19 @@ function ColumnsModal({ opened, onClose, settings, allDefs, onChange }: {
   const onDragEnd = () => { dragIndex.current = null; };
 
   const getLabel = (key: string) => allDefs.find((d) => d.key === key)?.label ?? key;
+  const isCustom = (key: string) => (customDefs ?? []).some((c) => c.key === key);
+
+  const handleAddColumn = () => {
+    if (!newColLabel.trim()) return;
+    const key = `custom_${newColLabel.trim().toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "")}`;
+    const col: CustomColumnDef = { key, label: newColLabel.trim(), width: newColWidth };
+    onAddCustom?.(col);
+    // Also add it to the draft as visible
+    setDraft((prev) => [...prev, { key, visible: true }]);
+    setNewColOpen(false);
+    setNewColLabel("");
+    setNewColWidth(120);
+  };
 
   return (
     <Modal opened={opened} onClose={onClose} title={t("col_columns_title" as TranslationKey)} centered size="sm">
@@ -89,8 +111,62 @@ function ColumnsModal({ opened, onClose, settings, allDefs, onChange }: {
             <IconGripVertical size={14} style={{ color: "var(--mantine-color-dimmed)", flexShrink: 0 }} />
             <Switch size="sm" checked={s.visible} onChange={() => toggle(s.key)} />
             <Text size="sm" style={{ flex: 1 }}>{getLabel(s.key)}</Text>
+            {isCustom(s.key) && onDeleteCustom && (
+              <ActionIcon
+                size="xs"
+                variant="subtle"
+                color="red"
+                title="Delete column"
+                onClick={() => {
+                  onDeleteCustom(s.key);
+                  setDraft((prev) => prev.filter((x) => x.key !== s.key));
+                }}
+              >
+                <IconX size={10} />
+              </ActionIcon>
+            )}
           </Group>
         ))}
+
+        {onAddCustom && (
+          newColOpen ? (
+            <Box style={{ padding: "8px", border: "1px dashed var(--mantine-color-default-border)", borderRadius: 6 }}>
+              <TextInput
+                size="xs"
+                label="Column label"
+                placeholder="e.g. Barcode, Condition, Price"
+                value={newColLabel}
+                onChange={(e) => setNewColLabel(e.currentTarget.value)}
+                mb="xs"
+                data-autofocus
+              />
+              <NumberInput
+                size="xs"
+                label="Width (px)"
+                value={newColWidth}
+                onChange={(v) => setNewColWidth(typeof v === "number" ? v : 120)}
+                min={60}
+                max={400}
+                step={10}
+                mb="xs"
+              />
+              <Group gap="xs" justify="flex-end">
+                <Button size="compact-xs" variant="default" onClick={() => setNewColOpen(false)}>Cancel</Button>
+                <Button size="compact-xs" onClick={handleAddColumn} disabled={!newColLabel.trim()}>Add</Button>
+              </Group>
+            </Box>
+          ) : (
+            <Button
+              size="xs"
+              variant="subtle"
+              leftSection={<IconPlus size={13} />}
+              onClick={() => setNewColOpen(true)}
+            >
+              New column
+            </Button>
+          )
+        )}
+
         <Group justify="flex-end" mt="sm">
           <Button variant="default" size="xs" onClick={onClose}>{t("delete_cancel" as TranslationKey)}</Button>
           <Button size="xs" onClick={() => { onChange(draft); onClose(); }}>{t("common_apply" as TranslationKey)}</Button>
@@ -248,7 +324,7 @@ function normalize(s: string): string {
 
 type SortKey = { key: string; dir: "asc" | "desc" };
 
-export function CollectionPage({ title, singular, icon, atom, kind, columns, titleWidth, columnSettings, allColumnDefs, setColumnSettings, subCollectionId, extraHeaderActions }: Props) {
+export function CollectionPage({ title, singular, icon, atom, kind, columns, titleWidth, columnSettings, allColumnDefs, setColumnSettings, subCollectionId, extraHeaderActions, customColumnDefs, onAddCustomColumn, onDeleteCustomColumn }: Props) {
   const t = useT();
   const { formatNumber } = useFormatting();
   const [rawItems, setItems] = useAtom(atom);
@@ -628,6 +704,9 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
           settings={columnSettings}
           allDefs={allColumnDefs}
           onChange={setColumnSettings}
+          customDefs={customColumnDefs}
+          onAddCustom={onAddCustomColumn}
+          onDeleteCustom={onDeleteCustomColumn}
         />
       )}
       <CopyToModal

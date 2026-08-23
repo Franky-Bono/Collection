@@ -1,7 +1,7 @@
 import { ActionIcon, Box, Modal, Text, TextInput, Button, Group, Tooltip } from "@mantine/core";
 import {
   IconBook, IconBook2, IconChevronDown, IconChevronLeft, IconChevronRight,
-  IconDeviceGamepad2, IconLayoutDashboard, IconMovie, IconMusic,
+  IconDeviceGamepad2, IconGripVertical, IconLayoutDashboard, IconMovie, IconMusic,
   IconPlus, IconSettings, IconTrash, IconUpload,
 } from "@tabler/icons-react";
 import { useAtom, useAtomValue } from "jotai";
@@ -9,13 +9,14 @@ import {
   sidebarCollapsedAtom, customTypesAtom, trashedItemsAtom,
   subCollectionsAtom, sidebarExpandedAtom, subCollectionItemsAtom,
   booksAtom, comicsAtom, videoGamesAtom, moviesAtom, musicAtom, customItemsAtom,
+  categoryOrderAtom,
 } from "@/state/atoms";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import * as styles from "./Sidebar.css";
 import { useT } from "@/i18n/useT";
 import { CustomTypeIcon } from "@/components/collection/CustomTypeIcon";
 import type { CollectionKind } from "@/types";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 interface CategoryNavItem {
   kind: CollectionKind;
@@ -49,6 +50,7 @@ export function Sidebar() {
   const movies = useAtomValue(moviesAtom);
   const music = useAtomValue(musicAtom);
   const customItems = useAtomValue(customItemsAtom);
+  const [categoryOrder, setCategoryOrder] = useAtom(categoryOrderAtom);
 
   const collectionCounts: Record<string, number> = {
     books:      (books      ?? []).length,
@@ -65,9 +67,19 @@ export function Sidebar() {
   const [newSubKind, setNewSubKind] = useState<CollectionKind>("movies");
   const [newSubName, setNewSubName] = useState("");
 
+  // Drag state for category reordering
+  const catDragIndex = useRef<number | null>(null);
+  // Drag state for sub-collection reordering: "kind:index"
+  const subDragKey = useRef<{ kind: CollectionKind; index: number } | null>(null);
+
+  const orderedCategories = CATEGORY_ITEMS.slice().sort((a, b) => {
+    const ai = categoryOrder.indexOf(a.kind);
+    const bi = categoryOrder.indexOf(b.kind);
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+  });
+
   const isExpanded = (kind: CollectionKind) => {
     const kindSubs = subCollections.filter((s) => s.kind === kind);
-    // Auto-expand if sub-collections exist and user hasn't explicitly collapsed
     if (kindSubs.length > 0 && !expandedKinds.includes(`collapsed:${kind}`)) return true;
     return expandedKinds.includes(kind);
   };
@@ -75,7 +87,6 @@ export function Sidebar() {
   const toggleExpand = (kind: CollectionKind) => {
     const kindSubs = subCollections.filter((s) => s.kind === kind);
     if (kindSubs.length > 0) {
-      // Toggle the collapsed marker
       const collapseKey = `collapsed:${kind}`;
       const expandKey = kind;
       if (isExpanded(kind)) {
@@ -109,6 +120,42 @@ export function Sidebar() {
     navigate({ to: `/${newSubKind}/${id}` });
   };
 
+  // Category drag handlers
+  const onCatDragStart = (i: number) => { catDragIndex.current = i; };
+  const onCatDragOver = (e: React.DragEvent, i: number) => {
+    e.preventDefault();
+    if (catDragIndex.current === null || catDragIndex.current === i) return;
+    setCategoryOrder((prev) => {
+      const ordered = CATEGORY_ITEMS.slice().sort((a, b) => {
+        const ai = prev.indexOf(a.kind); const bi = prev.indexOf(b.kind);
+        return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+      }).map((c) => c.kind);
+      const next = [...ordered];
+      const [moved] = next.splice(catDragIndex.current!, 1);
+      next.splice(i, 0, moved);
+      catDragIndex.current = i;
+      return next;
+    });
+  };
+  const onCatDragEnd = () => { catDragIndex.current = null; };
+
+  // Sub-collection drag handlers
+  const onSubDragStart = (kind: CollectionKind, index: number) => { subDragKey.current = { kind, index }; };
+  const onSubDragOver = (e: React.DragEvent, kind: CollectionKind, index: number) => {
+    e.preventDefault();
+    if (!subDragKey.current || subDragKey.current.kind !== kind || subDragKey.current.index === index) return;
+    setSubCollections((prev) => {
+      const kindSubs = prev.filter((s) => s.kind === kind);
+      const others = prev.filter((s) => s.kind !== kind);
+      const next = [...kindSubs];
+      const [moved] = next.splice(subDragKey.current!.index, 1);
+      next.splice(index, 0, moved);
+      subDragKey.current = { kind, index };
+      return [...others, ...next];
+    });
+  };
+  const onSubDragEnd = () => { subDragKey.current = null; };
+
   return (
     <Box className={`${styles.nav} ${collapsed ? styles.navCollapsed : ""}`}>
       {/* Logo / collapse toggle */}
@@ -135,7 +182,7 @@ export function Sidebar() {
       </Tooltip>
 
       {/* Expandable category items */}
-      {CATEGORY_ITEMS.map(({ kind, to, icon, labelKey }) => {
+      {orderedCategories.map(({ kind, to, icon, labelKey }, catIdx) => {
         const kindSubs = subCollections.filter((s) => s.kind === kind);
         const expanded = isExpanded(kind);
         const isKindActive = location.pathname === to;
@@ -154,14 +201,22 @@ export function Sidebar() {
         }
 
         return (
-          <Box key={kind}>
-            {/* Category row — always navigates to the category page; chevron toggles expand */}
+          <Box
+            key={kind}
+            draggable
+            onDragStart={() => onCatDragStart(catIdx)}
+            onDragOver={(e) => onCatDragOver(e, catIdx)}
+            onDragEnd={onCatDragEnd}
+          >
+            {/* Category row */}
             <Box
               className={`${styles.categoryRow} ${isKindActive && !hasActiveSub ? styles.categoryRowActive : ""}`}
               onClick={() => navigate({ to })}
+              style={{ display: "flex", alignItems: "center" }}
             >
+              <IconGripVertical size={12} style={{ color: "var(--mantine-color-dimmed)", flexShrink: 0, marginRight: 4, cursor: "grab" }} />
               {icon}
-              <span style={{ flex: 1 }}>{t(labelKey)}</span>
+              <span style={{ flex: 1, marginLeft: 6 }}>{t(labelKey)}</span>
               <Text size="xs" c="dimmed" style={{ marginRight: kindSubs.length > 0 ? 0 : 4 }}>
                 ({collectionCounts[kind] ?? 0})
               </Text>
@@ -180,18 +235,27 @@ export function Sidebar() {
             </Box>
 
             {/* Sub-collection links */}
-            {expanded && kindSubs.length > 0 && kindSubs.map((sub) => {
+            {expanded && kindSubs.length > 0 && kindSubs.map((sub, subIdx) => {
               const subTo = `/${kind}/${sub.id}`;
               const isSubActive = location.pathname === subTo;
               return (
-                <Link key={sub.id} to={subTo} style={{ textDecoration: "none" }}>
-                  <Box className={`${styles.sublink} ${isSubActive ? styles.sublinkActive : ""}`}>
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
-                      {sub.name}
-                    </span>
-                    <Text size="xs" c="dimmed">({(subCollectionItemsMap?.[sub.id] ?? []).length})</Text>
-                  </Box>
-                </Link>
+                <Box
+                  key={sub.id}
+                  draggable
+                  onDragStart={(e) => { e.stopPropagation(); onSubDragStart(kind, subIdx); }}
+                  onDragOver={(e) => { e.stopPropagation(); onSubDragOver(e, kind, subIdx); }}
+                  onDragEnd={(e) => { e.stopPropagation(); onSubDragEnd(); }}
+                >
+                  <Link to={subTo} style={{ textDecoration: "none" }}>
+                    <Box className={`${styles.sublink} ${isSubActive ? styles.sublinkActive : ""}`} style={{ display: "flex", alignItems: "center" }}>
+                      <IconGripVertical size={11} style={{ color: "var(--mantine-color-dimmed)", flexShrink: 0, marginRight: 4, cursor: "grab" }} />
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                        {sub.name}
+                      </span>
+                      <Text size="xs" c="dimmed">({(subCollectionItemsMap?.[sub.id] ?? []).length})</Text>
+                    </Box>
+                  </Link>
+                </Box>
               );
             })}
 

@@ -1,11 +1,12 @@
 import { IconBook2 } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { CollectionPage, StatusBadge, getStatusLabel } from "@/components/collection/CollectionPage";
-import { comicsAtom, comicColumnsAtom } from "@/state/atoms";
+import { comicsAtom, comicColumnsAtom, customColumnsAtom } from "@/state/atoms";
 import type { Comic } from "@/types";
 import { useT } from "@/i18n/useT";
 import { useAtom } from "jotai";
 import { Text } from "@mantine/core";
+import type { CustomColumnDef } from "@/state/atoms";
 
 export const Route = createFileRoute("/comics")({
   component: ComicsPage,
@@ -14,8 +15,10 @@ export const Route = createFileRoute("/comics")({
 function ComicsPage() {
   const t = useT();
   const [comicColumns, setComicColumns] = useAtom(comicColumnsAtom);
+  const [customColumns, setCustomColumns] = useAtom(customColumnsAtom);
+  const kindCustom: CustomColumnDef[] = customColumns["comics"] ?? [];
 
-  const ALL_COLUMNS = [
+  const BUILTIN_COLUMNS = [
     { key: "author",    label: t("col_author"),    width: 140 },
     { key: "series",    label: t("col_series"),    width: 140 },
     { key: "issue",     label: t("col_issue"),     width: 80  },
@@ -29,6 +32,11 @@ function ComicsPage() {
     { key: "notes",     label: t("col_notes"),     width: 160, render: (item: Comic) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
   ] as const;
 
+  const ALL_COLUMNS = [
+    ...BUILTIN_COLUMNS,
+    ...kindCustom.map((c) => ({ key: c.key, label: c.label, width: c.width })),
+  ];
+
   const mergedColumns = [
     ...comicColumns.filter(s => ALL_COLUMNS.some(c => c.key === s.key)),
     ...ALL_COLUMNS.filter(c => !comicColumns.some(s => s.key === c.key)).map(c => ({ key: c.key, visible: false })),
@@ -37,7 +45,17 @@ function ComicsPage() {
   const columns = mergedColumns
     .filter((s) => s.visible)
     .map((s) => ALL_COLUMNS.find((c) => c.key === s.key))
-    .filter(Boolean) as typeof ALL_COLUMNS[number][];
+    .filter(Boolean) as (typeof ALL_COLUMNS[number])[];
+
+  const handleAddCustom = (col: CustomColumnDef) => {
+    setCustomColumns((prev) => ({ ...prev, comics: [...(prev["comics"] ?? []), col] }));
+    setComicColumns((prev) => [...prev, { key: col.key, visible: true }]);
+  };
+
+  const handleDeleteCustom = (key: string) => {
+    setCustomColumns((prev) => ({ ...prev, comics: (prev["comics"] ?? []).filter((c) => c.key !== key) }));
+    setComicColumns((prev) => prev.filter((s) => s.key !== key));
+  };
 
   return (
     <CollectionPage
@@ -50,6 +68,9 @@ function ComicsPage() {
       columnSettings={mergedColumns}
       allColumnDefs={ALL_COLUMNS.map((c) => ({ key: c.key, label: c.label }))}
       setColumnSettings={setComicColumns}
+      customColumnDefs={kindCustom}
+      onAddCustomColumn={handleAddCustom}
+      onDeleteCustomColumn={handleDeleteCustom}
     />
   );
 }

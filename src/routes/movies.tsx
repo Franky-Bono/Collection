@@ -1,11 +1,12 @@
 import { IconMovie } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { CollectionPage, FormatBadge, StatusBadge, getStatusLabel, getFormatLabel } from "@/components/collection/CollectionPage";
-import { moviesAtom, movieColumnsAtom } from "@/state/atoms";
+import { moviesAtom, movieColumnsAtom, customColumnsAtom } from "@/state/atoms";
 import type { Movie } from "@/types";
 import { useT } from "@/i18n/useT";
 import { useAtom } from "jotai";
 import { Text } from "@mantine/core";
+import type { CustomColumnDef } from "@/state/atoms";
 
 export const Route = createFileRoute("/movies")({
   component: MoviesPage,
@@ -14,8 +15,10 @@ export const Route = createFileRoute("/movies")({
 function MoviesPage() {
   const t = useT();
   const [movieColumns, setMovieColumns] = useAtom(movieColumnsAtom);
+  const [customColumns, setCustomColumns] = useAtom(customColumnsAtom);
+  const kindCustom: CustomColumnDef[] = customColumns["movies"] ?? [];
 
-  const ALL_COLUMNS = [
+  const BUILTIN_COLUMNS = [
     { key: "year",      label: t("col_year"),     width: 80  },
     { key: "director",  label: t("col_director"), width: 150 },
     { key: "country",   label: t("col_country"),  width: 110 },
@@ -30,6 +33,11 @@ function MoviesPage() {
     { key: "notes",     label: t("col_notes"),    width: 160, render: (item: Movie) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
   ] as const;
 
+  const ALL_COLUMNS = [
+    ...BUILTIN_COLUMNS,
+    ...kindCustom.map((c) => ({ key: c.key, label: c.label, width: c.width })),
+  ];
+
   const mergedColumns = [
     ...movieColumns.filter(s => ALL_COLUMNS.some(c => c.key === s.key)),
     ...ALL_COLUMNS.filter(c => !movieColumns.some(s => s.key === c.key)).map(c => ({ key: c.key, visible: false })),
@@ -38,7 +46,17 @@ function MoviesPage() {
   const columns = mergedColumns
     .filter((s) => s.visible)
     .map((s) => ALL_COLUMNS.find((c) => c.key === s.key))
-    .filter(Boolean) as typeof ALL_COLUMNS[number][];
+    .filter(Boolean) as (typeof ALL_COLUMNS[number])[];
+
+  const handleAddCustom = (col: CustomColumnDef) => {
+    setCustomColumns((prev) => ({ ...prev, movies: [...(prev["movies"] ?? []), col] }));
+    setMovieColumns((prev) => [...prev, { key: col.key, visible: true }]);
+  };
+
+  const handleDeleteCustom = (key: string) => {
+    setCustomColumns((prev) => ({ ...prev, movies: (prev["movies"] ?? []).filter((c) => c.key !== key) }));
+    setMovieColumns((prev) => prev.filter((s) => s.key !== key));
+  };
 
   return (
     <CollectionPage
@@ -52,6 +70,9 @@ function MoviesPage() {
       columnSettings={mergedColumns}
       allColumnDefs={ALL_COLUMNS.map((c) => ({ key: c.key, label: c.label }))}
       setColumnSettings={setMovieColumns}
+      customColumnDefs={kindCustom}
+      onAddCustomColumn={handleAddCustom}
+      onDeleteCustomColumn={handleDeleteCustom}
     />
   );
 }
