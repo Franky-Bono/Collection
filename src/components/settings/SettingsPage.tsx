@@ -46,26 +46,31 @@ export function SettingsPage() {
   const [, setMovies] = useAtom(moviesAtom);
   const [, setMusic] = useAtom(musicAtom);
   const [subCollections, setSubCollections] = useAtom(subCollectionsAtom);
-  const [subCollectionItems, setSubCollectionItems] = useAtom(subCollectionItemsAtom);
+  const [subCollectionItemsMap, setSubCollectionItemsMap] = useAtom(subCollectionItemsAtom);
   const [customTypes, setCustomTypes] = useAtom(customTypesAtom);
   const [, setCustomItems] = useAtom(customItemsAtom);
   const [newTypeOpen, setNewTypeOpen] = useState(false);
   const [deleteAllTarget, setDeleteAllTarget] = useState<string | null>(null);
   const [deleteAllConfirm, setDeleteAllConfirm] = useState("");
 
-  const topLevelOptions = [
-    { value: "books",      label: t("nav_books"),     group: "Collections" },
-    { value: "comics",     label: t("nav_comics"),     group: "Collections" },
-    { value: "videogames", label: t("nav_videogames"), group: "Collections" },
-    { value: "movies",     label: t("nav_movies"),     group: "Collections" },
-    { value: "music",      label: t("nav_music"),      group: "Collections" },
+  const topLevelItems = [
+    { value: "books",      label: t("nav_books")     },
+    { value: "comics",     label: t("nav_comics")     },
+    { value: "videogames", label: t("nav_videogames") },
+    { value: "movies",     label: t("nav_movies")     },
+    { value: "music",      label: t("nav_music")      },
   ];
-  const subCollectionOptions = (subCollections ?? []).map((s) => ({
+  const subCollectionItems = (subCollections ?? []).map((s) => ({
     value: s.id,
     label: s.name,
-    group: "Sub-collections",
   }));
-  const allSelectOptions = [...topLevelOptions, ...subCollectionOptions];
+  const allSelectOptions = subCollectionItems.length > 0
+    ? [
+        { group: "Collections",    items: topLevelItems },
+        { group: "Sub-collections", items: subCollectionItems },
+      ]
+    : topLevelItems;
+  const allFlatOptions = [...topLevelItems, ...subCollectionItems];
 
   const handleDeleteAll = () => {
     if (deleteAllTarget === "books")           setBooks([]);
@@ -74,12 +79,12 @@ export function SettingsPage() {
     else if (deleteAllTarget === "movies")     setMovies([]);
     else if (deleteAllTarget === "music")      setMusic([]);
     else {
-      const newItems = { ...(subCollectionItems ?? {}) };
+      const newItems = { ...(subCollectionItemsMap ?? {}) };
       delete newItems[deleteAllTarget!];
-      setSubCollectionItems(newItems);
+      setSubCollectionItemsMap(newItems);
       setSubCollections(subCollections.filter((s) => s.id !== deleteAllTarget));
     }
-    const label = allSelectOptions.find((c) => c.value === deleteAllTarget)?.label ?? "";
+    const label = allFlatOptions.find((c) => c.value === deleteAllTarget)?.label ?? "";
     notifications.show({ message: `All ${label} deleted.`, color: "red" });
     setDeleteAllTarget(null);
     setDeleteAllConfirm("");
@@ -419,12 +424,12 @@ export function SettingsPage() {
       <Modal
         opened={!!deleteAllTarget}
         onClose={() => { setDeleteAllTarget(null); setDeleteAllConfirm(""); }}
-        title={<Text fw={700} c="red">{t("settings_danger_modal_title", { collection: allSelectOptions.find((c) => c.value === deleteAllTarget)?.label ?? "" })}</Text>}
+        title={<Text fw={700} c="red">{t("settings_danger_modal_title", { collection: allFlatOptions.find((c) => c.value === deleteAllTarget)?.label ?? "" })}</Text>}
         centered
       >
         <Stack gap="md">
           <Text size="sm">
-            {t("settings_danger_modal_body", { collection: allSelectOptions.find((c) => c.value === deleteAllTarget)?.label ?? "" })}
+            {t("settings_danger_modal_body", { collection: allFlatOptions.find((c) => c.value === deleteAllTarget)?.label ?? "" })}
           </Text>
           <Text size="sm">{t("settings_danger_modal_confirm_prompt")}</Text>
           <TextInput
