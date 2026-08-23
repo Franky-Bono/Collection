@@ -18,6 +18,7 @@ import { Route as MoviesRouteImport } from './routes/movies'
 import { Route as MusicRouteImport } from './routes/music'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as VideogamesRouteImport } from './routes/videogames'
+import { Route as KindCollectionIdRouteImport } from './routes/$kind.$collectionId'
 import { Route as CustomTypeIdRouteImport } from './routes/custom.$typeId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -65,6 +66,11 @@ const VideogamesRoute = VideogamesRouteImport.update({
   path: '/videogames',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KindCollectionIdRoute = KindCollectionIdRouteImport.update({
+  id: '/$kind/$collectionId',
+  path: '/$kind/$collectionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CustomTypeIdRoute = CustomTypeIdRouteImport.update({
   id: '/custom/$typeId',
   path: '/custom/$typeId',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/music': typeof MusicRoute
   '/settings': typeof SettingsRoute
   '/videogames': typeof VideogamesRoute
+  '/$kind/$collectionId': typeof KindCollectionIdRoute
   '/custom/$typeId': typeof CustomTypeIdRoute
 }
 export interface FileRoutesByTo {
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/music': typeof MusicRoute
   '/settings': typeof SettingsRoute
   '/videogames': typeof VideogamesRoute
+  '/$kind/$collectionId': typeof KindCollectionIdRoute
   '/custom/$typeId': typeof CustomTypeIdRoute
 }
 export interface FileRoutesById {
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/music': typeof MusicRoute
   '/settings': typeof SettingsRoute
   '/videogames': typeof VideogamesRoute
+  '/$kind/$collectionId': typeof KindCollectionIdRoute
   '/custom/$typeId': typeof CustomTypeIdRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/music'
     | '/settings'
     | '/videogames'
+    | '/$kind/$collectionId'
     | '/custom/$typeId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/music'
     | '/settings'
     | '/videogames'
+    | '/$kind/$collectionId'
     | '/custom/$typeId'
   id:
     | '__root__'
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/music'
     | '/settings'
     | '/videogames'
+    | '/$kind/$collectionId'
     | '/custom/$typeId'
   fileRoutesById: FileRoutesById
 }
@@ -157,6 +169,7 @@ export interface RootRouteChildren {
   MusicRoute: typeof MusicRoute
   SettingsRoute: typeof SettingsRoute
   VideogamesRoute: typeof VideogamesRoute
+  KindCollectionIdRoute: typeof KindCollectionIdRoute
   CustomTypeIdRoute: typeof CustomTypeIdRoute
 }
 
@@ -225,6 +238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VideogamesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$kind/$collectionId': {
+      id: '/$kind/$collectionId'
+      path: '/$kind/$collectionId'
+      fullPath: '/$kind/$collectionId'
+      preLoaderRoute: typeof KindCollectionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/custom/$typeId': {
       id: '/custom/$typeId'
       path: '/custom/$typeId'
@@ -245,6 +265,7 @@ const rootRouteChildren: RootRouteChildren = {
   MusicRoute: MusicRoute,
   SettingsRoute: SettingsRoute,
   VideogamesRoute: VideogamesRoute,
+  KindCollectionIdRoute: KindCollectionIdRoute,
   CustomTypeIdRoute: CustomTypeIdRoute,
 }
 export const routeTree = rootRouteImport

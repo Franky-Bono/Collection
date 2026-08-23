@@ -43,6 +43,8 @@ const COLLECTION_KEYS = [
   "collection-trashed",
   "collection-custom-types",
   "collection-custom-items",
+  "collection-sub-collections",
+  "collection-sub-items",
 ] as const;
 
 export type IDBSnapshot = {
@@ -54,26 +56,31 @@ export type IDBSnapshot = {
   "collection-trashed": unknown[];
   "collection-custom-types": unknown[];
   "collection-custom-items": Record<string, unknown[]>;
+  "collection-sub-collections": unknown[];
+  "collection-sub-items": Record<string, unknown[]>;
 };
 
 export async function loadAllFromIDB(): Promise<IDBSnapshot> {
   try {
     const values = await getMany([...COLLECTION_KEYS], collectionStore);
     return {
-      "collection-books":       Array.isArray(values[0]) ? values[0] : [],
-      "collection-comics":      Array.isArray(values[1]) ? values[1] : [],
-      "collection-videogames":  Array.isArray(values[2]) ? values[2] : [],
-      "collection-movies":      Array.isArray(values[3]) ? values[3] : [],
-      "collection-music":       Array.isArray(values[4]) ? values[4] : [],
-      "collection-trashed":     Array.isArray(values[5]) ? values[5] : [],
-      "collection-custom-types":Array.isArray(values[6]) ? values[6] : [],
-      "collection-custom-items":values[7] && typeof values[7] === "object" && !Array.isArray(values[7]) ? values[7] as Record<string, unknown[]> : {},
+      "collection-books":           Array.isArray(values[0]) ? values[0] : [],
+      "collection-comics":          Array.isArray(values[1]) ? values[1] : [],
+      "collection-videogames":      Array.isArray(values[2]) ? values[2] : [],
+      "collection-movies":          Array.isArray(values[3]) ? values[3] : [],
+      "collection-music":           Array.isArray(values[4]) ? values[4] : [],
+      "collection-trashed":         Array.isArray(values[5]) ? values[5] : [],
+      "collection-custom-types":    Array.isArray(values[6]) ? values[6] : [],
+      "collection-custom-items":    values[7] && typeof values[7] === "object" && !Array.isArray(values[7]) ? values[7] as Record<string, unknown[]> : {},
+      "collection-sub-collections": Array.isArray(values[8]) ? values[8] : [],
+      "collection-sub-items":       values[9] && typeof values[9] === "object" && !Array.isArray(values[9]) ? values[9] as Record<string, unknown[]> : {},
     };
   } catch {
     return {
       "collection-books": [], "collection-comics": [], "collection-videogames": [],
       "collection-movies": [], "collection-music": [], "collection-trashed": [],
       "collection-custom-types": [], "collection-custom-items": {},
+      "collection-sub-collections": [], "collection-sub-items": {},
     };
   }
 }

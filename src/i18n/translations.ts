@@ -282,6 +282,19 @@ const translations = {
     settings_drive_connect_success: "Connected to Google Drive!",
     settings_drive_connect_fail: "Connection failed:",
     settings_drive_no_client_id: "Please enter a Google OAuth Client ID first.",
+
+    // Sub-collections
+    sub_new: "New collection",
+    sub_new_title: "New collection",
+    sub_name_label: "Name",
+    sub_name_placeholder: "e.g. Blu-rays, Watchlist, 4K...",
+    sub_create: "Create",
+    sub_cancel: "Cancel",
+    sub_rename: "Rename",
+    sub_rename_title: "Rename collection",
+    sub_delete: "Delete collection",
+    sub_delete_confirm: "Delete \"{name}\"? All items will be moved to the recycle bin.",
+    sub_delete_confirm_btn: "Delete",
   },
 
   fr: {
@@ -565,6 +578,19 @@ const translations = {
     settings_drive_connect_success: "Connecté à Google Drive !",
     settings_drive_connect_fail: "Connexion échouée :",
     settings_drive_no_client_id: "Veuillez d'abord saisir un ID client OAuth Google.",
+
+    // Sub-collections
+    sub_new: "Nouvelle collection",
+    sub_new_title: "Nouvelle collection",
+    sub_name_label: "Nom",
+    sub_name_placeholder: "ex. Blu-rays, À voir, 4K...",
+    sub_create: "Créer",
+    sub_cancel: "Annuler",
+    sub_rename: "Renommer",
+    sub_rename_title: "Renommer la collection",
+    sub_delete: "Supprimer la collection",
+    sub_delete_confirm: "Supprimer \"{name}\" ? Tous les éléments seront déplacés vers la corbeille.",
+    sub_delete_confirm_btn: "Supprimer",
   },
 } as const;
 

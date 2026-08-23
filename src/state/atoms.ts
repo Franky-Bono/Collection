@@ -1,6 +1,6 @@
 import { atomWithStorage } from "jotai/utils";
 import { atom } from "jotai";
-import type { Book, Comic, VideoGame, Movie, MusicAlbum, CustomCollectionType, CustomItem, AnyItem } from "@/types";
+import type { Book, Comic, VideoGame, Movie, MusicAlbum, CustomCollectionType, CustomItem, AnyItem, SubCollection } from "@/types";
 import type { Language } from "@/i18n/translations";
 import { setInIDB } from "@/storage/idb";
 
@@ -66,6 +66,7 @@ export interface TrashedEntry {
   item: AnyItem | CustomItem;
   kind: string;
   typeId?: string;
+  subCollectionId?: string;
   deletedAt: string;
 }
 
@@ -103,6 +104,36 @@ export function makeCustomItemsAtom(typeId: string) {
     },
   );
 }
+
+// --- Sub-collection atoms ---
+const _subCollections = makeCollectionAtom<SubCollection[]>("collection-sub-collections", []);
+export const subCollectionsAtom = _subCollections.atom;
+
+const _subCollectionItemsBase = atom<Record<string, AnyItem[]>>({});
+export const subCollectionItemsAtom = atom<
+  Record<string, AnyItem[]>,
+  [Record<string, AnyItem[]> | ((prev: Record<string, AnyItem[]>) => Record<string, AnyItem[]>)],
+  void
+>(
+  (get) => get(_subCollectionItemsBase),
+  (get, set, update) => {
+    const next = typeof update === "function" ? update(get(_subCollectionItemsBase)) : update;
+    set(_subCollectionItemsBase, next);
+    setInIDB("collection-sub-items", next);
+  }
+);
+
+export function makeSubCollectionItemsAtom(collectionId: string) {
+  return atom(
+    (get) => get(subCollectionItemsAtom)[collectionId] ?? [],
+    (get, set, items: AnyItem[]) => {
+      const all = get(subCollectionItemsAtom);
+      set(subCollectionItemsAtom, { ...all, [collectionId]: items });
+    },
+  );
+}
+
+export const sidebarExpandedAtom = atomWithStorage<string[]>("collection-sidebar-expanded", []);
 
 export const driveClientIdAtom = atomWithStorage<string>("collection-drive-client-id", "");
 export const driveSyncEnabledAtom = atomWithStorage<boolean>("collection-drive-enabled", false);

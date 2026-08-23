@@ -1,7 +1,7 @@
 import { Badge, Box, Card, Grid, Group, Stack, Table, Text, Title } from "@mantine/core";
 import { IconBook, IconBook2, IconDeviceGamepad2, IconMovie, IconMusic } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
-import { booksAtom, comicsAtom, moviesAtom, musicAtom, videoGamesAtom, customTypesAtom, customItemsAtom } from "@/state/atoms";
+import { booksAtom, comicsAtom, moviesAtom, musicAtom, videoGamesAtom, customTypesAtom, customItemsAtom, subCollectionsAtom, subCollectionItemsAtom } from "@/state/atoms";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import type { AnyItem, CustomItem } from "@/types";
 import { CustomTypeIcon } from "@/components/collection/CustomTypeIcon";
@@ -76,6 +76,13 @@ function DashboardPage() {
   const music = useAtomValue(musicAtom);
   const customTypes = useAtomValue(customTypesAtom);
   const customItemsMap = useAtomValue(customItemsAtom);
+  const subCollections = useAtomValue(subCollectionsAtom);
+  const subCollectionItemsMap = useAtomValue(subCollectionItemsAtom);
+
+  const subItemsByKind = (kind: string) =>
+    subCollections
+      .filter((s) => s.kind === kind)
+      .flatMap((s) => subCollectionItemsMap[s.id] ?? []);
 
   const builtinRecent: { item: AnyItem; type: string }[] = [
     ...books.map((b) => ({ item: b as AnyItem, type: t("dashboard_type_book") })),
@@ -83,6 +90,9 @@ function DashboardPage() {
     ...videoGames.map((g) => ({ item: g as AnyItem, type: t("dashboard_type_videogame") })),
     ...movies.map((m) => ({ item: m as AnyItem, type: t("dashboard_type_movie") })),
     ...music.map((a) => ({ item: a as AnyItem, type: t("dashboard_type_music") })),
+    ...subCollections.flatMap((s) =>
+      (subCollectionItemsMap[s.id] ?? []).map((item) => ({ item: item as AnyItem, type: s.name }))
+    ),
   ];
 
   const customRecent: { item: CustomItem; type: string }[] = customTypes.flatMap((t) =>
@@ -102,19 +112,19 @@ function DashboardPage() {
 
       <Grid mb="xl" columns={10} gutter="sm">
         <Grid.Col span={{ base: 10, sm: 5, md: 2 }}>
-          <StatCard label={t("nav_movies")} count={formatNumber(movies.length)} icon={<IconMovie size={18} />} color="#059669" onClick={() => navigate({ to: "/movies" })} />
+          <StatCard label={t("nav_movies")} count={formatNumber(movies.length + subItemsByKind("movies").length)} icon={<IconMovie size={18} />} color="#059669" onClick={() => navigate({ to: "/movies" })} />
         </Grid.Col>
         <Grid.Col span={{ base: 10, sm: 5, md: 2 }}>
-          <StatCard label={t("nav_books")} count={formatNumber(books.length)} icon={<IconBook size={18} />} color="#2563eb" onClick={() => navigate({ to: "/books" })} />
+          <StatCard label={t("nav_books")} count={formatNumber(books.length + subItemsByKind("books").length)} icon={<IconBook size={18} />} color="#2563eb" onClick={() => navigate({ to: "/books" })} />
         </Grid.Col>
         <Grid.Col span={{ base: 10, sm: 5, md: 2 }}>
-          <StatCard label={t("nav_music")} count={formatNumber(music.length)} icon={<IconMusic size={18} />} color="#d97706" onClick={() => navigate({ to: "/music" })} />
+          <StatCard label={t("nav_music")} count={formatNumber(music.length + subItemsByKind("music").length)} icon={<IconMusic size={18} />} color="#d97706" onClick={() => navigate({ to: "/music" })} />
         </Grid.Col>
         <Grid.Col span={{ base: 10, sm: 5, md: 2 }}>
-          <StatCard label={t("nav_comics")} count={formatNumber(comics.length)} icon={<IconBook2 size={18} />} color="#7c3aed" onClick={() => navigate({ to: "/comics" })} />
+          <StatCard label={t("nav_comics")} count={formatNumber(comics.length + subItemsByKind("comics").length)} icon={<IconBook2 size={18} />} color="#7c3aed" onClick={() => navigate({ to: "/comics" })} />
         </Grid.Col>
         <Grid.Col span={{ base: 10, sm: 5, md: 2 }}>
-          <StatCard label={t("nav_videogames")} count={formatNumber(videoGames.length)} icon={<IconDeviceGamepad2 size={18} />} color="#0891b2" onClick={() => navigate({ to: "/videogames" })} />
+          <StatCard label={t("nav_videogames")} count={formatNumber(videoGames.length + subItemsByKind("videogames").length)} icon={<IconDeviceGamepad2 size={18} />} color="#0891b2" onClick={() => navigate({ to: "/videogames" })} />
         </Grid.Col>
         {customTypes.map((ct, i) => (
           <Grid.Col key={ct.id} span={{ base: 10, sm: 5, md: 2 }}>

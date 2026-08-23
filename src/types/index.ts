@@ -90,6 +90,15 @@ export interface MusicAlbum {
 
 export type AnyItem = Book | Comic | VideoGame | Movie | MusicAlbum;
 
+export type CollectionKind = "books" | "comics" | "videogames" | "movies" | "music";
+
+export interface SubCollection {
+  id: string;
+  kind: CollectionKind;
+  name: string;
+  createdAt: string;
+}
+
 export interface CustomCollectionType {
   id: string;
   name: string;
@@ -121,4 +130,6 @@ export interface CollectionData {
   version: number;
   customTypes?: CustomCollectionType[];
   customItems?: Record<string, CustomItem[]>;
+  subCollections?: SubCollection[];
+  subCollectionItems?: Record<string, AnyItem[]>;
 }

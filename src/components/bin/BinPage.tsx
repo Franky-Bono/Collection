@@ -11,6 +11,8 @@ import {
   musicAtom,
   customItemsAtom,
   customTypesAtom,
+  subCollectionsAtom,
+  subCollectionItemsAtom,
 } from "@/state/atoms";
 import type { TrashedEntry } from "@/state/atoms";
 import type { AnyItem, Book, Comic, VideoGame, Movie, MusicAlbum, CustomItem } from "@/types";
@@ -29,8 +31,14 @@ export function BinPage() {
   const [music, setMusic] = useAtom(musicAtom);
   const [customItems, setCustomItems] = useAtom(customItemsAtom);
   const customTypes = useAtomValue(customTypesAtom);
+  const subCollections = useAtomValue(subCollectionsAtom);
+  const [subCollectionItems, setSubCollectionItems] = useAtom(subCollectionItemsAtom);
 
   const kindLabel = (entry: TrashedEntry): string => {
+    if (entry.subCollectionId) {
+      const sub = subCollections.find((s) => s.id === entry.subCollectionId);
+      return sub ? sub.name : entry.kind;
+    }
     if (entry.typeId) {
       return customTypes.find((ct) => ct.id === entry.typeId)?.name ?? entry.kind;
     }
@@ -53,15 +61,23 @@ export function BinPage() {
   };
 
   const handleRestore = (entry: TrashedEntry) => {
-    switch (entry.kind) {
-      case "books":      setBooks([...books, entry.item as Book]); break;
-      case "comics":     setComics([...comics, entry.item as Comic]); break;
-      case "videogames": setVideoGames([...videoGames, entry.item as VideoGame]); break;
-      case "movies":     setMovies([...movies, entry.item as Movie]); break;
-      case "music":      setMusic([...music, entry.item as MusicAlbum]); break;
-      default: {
-        const tid = entry.typeId!;
-        setCustomItems({ ...customItems, [tid]: [...(customItems[tid] ?? []), entry.item as CustomItem] });
+    if (entry.subCollectionId) {
+      const sid = entry.subCollectionId;
+      setSubCollectionItems({
+        ...subCollectionItems,
+        [sid]: [...(subCollectionItems[sid] ?? []), entry.item as AnyItem],
+      });
+    } else {
+      switch (entry.kind) {
+        case "books":      setBooks([...books, entry.item as Book]); break;
+        case "comics":     setComics([...comics, entry.item as Comic]); break;
+        case "videogames": setVideoGames([...videoGames, entry.item as VideoGame]); break;
+        case "movies":     setMovies([...movies, entry.item as Movie]); break;
+        case "music":      setMusic([...music, entry.item as MusicAlbum]); break;
+        default: {
+          const tid = entry.typeId!;
+          setCustomItems({ ...customItems, [tid]: [...(customItems[tid] ?? []), entry.item as CustomItem] });
+        }
       }
     }
     setTrashed(trashed.filter((e) => e !== entry));

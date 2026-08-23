@@ -1,15 +1,17 @@
-import type { CollectionData, CustomItem } from "@/types";
+import type { CollectionData, CustomItem, AnyItem, SubCollection } from "@/types";
 import { getMany } from "idb-keyval";
 import { collectionStore } from "./idb";
 
 const IDB_KEYS = {
-  books:       "collection-books",
-  comics:      "collection-comics",
-  videoGames:  "collection-videogames",
-  movies:      "collection-movies",
-  music:       "collection-music",
-  customTypes: "collection-custom-types",
-  customItems: "collection-custom-items",
+  books:              "collection-books",
+  comics:             "collection-comics",
+  videoGames:         "collection-videogames",
+  movies:             "collection-movies",
+  music:              "collection-music",
+  customTypes:        "collection-custom-types",
+  customItems:        "collection-custom-items",
+  subCollections:     "collection-sub-collections",
+  subCollectionItems: "collection-sub-items",
 } as const;
 
 export async function exportJSON(): Promise<void> {
@@ -28,7 +30,7 @@ export async function exportJSON(): Promise<void> {
   URL.revokeObjectURL(url);
 }
 
-export async function importJSON(file: File): Promise<CollectionData & { music: unknown[]; customItems: Record<string, CustomItem[]> }> {
+export async function importJSON(file: File): Promise<CollectionData & { music: unknown[]; customItems: Record<string, CustomItem[]>; subCollections: SubCollection[]; subCollectionItems: Record<string, AnyItem[]> }> {
   const text = await file.text();
   const data = JSON.parse(text);
   return data;

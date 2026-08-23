@@ -5,7 +5,7 @@ import type { WritableAtom } from "jotai";
 import { useAtom } from "jotai";
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { AnyItem } from "@/types";
+import type { AnyItem, CollectionKind } from "@/types";
 import { DeleteConfirm } from "./DeleteConfirm";
 import { ItemForm } from "./ItemForm";
 import { LookupModal } from "./LookupModal";
@@ -16,8 +16,6 @@ import type { TranslationKey } from "@/i18n/translations";
 import { useFormatting } from "@/hooks/useFormatting";
 import type { MovieColumnSetting, TrashedEntry } from "@/state/atoms";
 import { trashedItemsAtom } from "@/state/atoms";
-
-type CollectionKind = "books" | "comics" | "videogames" | "movies" | "music";
 
 interface ColumnDef {
   key: string;
@@ -38,6 +36,8 @@ interface Props {
   columnSettings?: MovieColumnSetting[];
   allColumnDefs?: { key: string; label: string }[];
   setColumnSettings?: (s: MovieColumnSetting[]) => void;
+  subCollectionId?: string;
+  extraHeaderActions?: React.ReactNode;
 }
 
 function ColumnsModal({ opened, onClose, settings, allDefs, onChange }: {
@@ -176,14 +176,18 @@ function normalize(s: string): string {
 
 type SortKey = { key: string; dir: "asc" | "desc" };
 
-export function CollectionPage({ title, singular, icon, atom, kind, columns, titleWidth, columnSettings, allColumnDefs, setColumnSettings }: Props) {
+export function CollectionPage({ title, singular, icon, atom, kind, columns, titleWidth, columnSettings, allColumnDefs, setColumnSettings, subCollectionId, extraHeaderActions }: Props) {
   const t = useT();
   const { formatNumber } = useFormatting();
   const [rawItems, setItems] = useAtom(atom);
   const [trashed, setTrashed] = useAtom(trashedItemsAtom);
   const trashedIds = useMemo(
-    () => new Set(trashed.filter((e) => e.kind === kind).map((e) => e.item.id)),
-    [trashed, kind],
+    () => new Set(
+      trashed
+        .filter((e) => e.kind === kind && e.subCollectionId === subCollectionId)
+        .map((e) => e.item.id)
+    ),
+    [trashed, kind, subCollectionId],
   );
   const items = useMemo(() => rawItems.filter((i) => !trashedIds.has(i.id)), [rawItems, trashedIds]);
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
@@ -291,7 +295,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
 
   const handleDelete = () => {
     if (!deleteTarget) return;
-    setTrashed([...trashed, { item: deleteTarget, kind, deletedAt: new Date().toISOString() }]);
+    setTrashed([...trashed, { item: deleteTarget, kind, subCollectionId, deletedAt: new Date().toISOString() }]);
     setItems(rawItems.filter((i) => i.id !== deleteTarget.id));
     notifications.show({ message: t("notif_trashed"), color: "orange" });
     setDeleteTarget(null);
@@ -300,7 +304,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
   const handleDeleteSelected = () => {
     const removed = rawItems.filter((i) => selected.has(i.id));
     const remaining = rawItems.filter((i) => !selected.has(i.id));
-    const entries: TrashedEntry[] = removed.map((item) => ({ item, kind, deletedAt: new Date().toISOString() }));
+    const entries: TrashedEntry[] = removed.map((item) => ({ item, kind, subCollectionId, deletedAt: new Date().toISOString() }));
     setItems(remaining);
     setTrashed([...trashed, ...entries]);
     setSelected(new Set());
@@ -365,6 +369,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
           )}
         </Group>
         <Group gap="xs">
+          {extraHeaderActions}
           {columnSettings && setColumnSettings && allColumnDefs && (
             <Tooltip label={t("col_columns_title" as TranslationKey)}>
               <Button size="xs" variant="default" leftSection={<IconColumns size={14} />} onClick={() => setColumnsOpen(true)}>
