@@ -21,7 +21,7 @@ import { IconAlertCircle, IconDownload, IconPlus, IconRefresh, IconTrash, IconUp
 import { useMantineColorScheme } from "@mantine/core";
 import { exportJSON, importJSON } from "@/storage";
 import { useAtom, useAtomValue } from "jotai";
-import { booksAtom, comicsAtom, moviesAtom, musicAtom, videoGamesAtom, languageAtom, colorSchemeAtom, customTypesAtom, customItemsAtom, driveClientIdAtom, driveSyncStatusAtom, driveLastSyncAtom, appPasswordHashAtom, thousandSeparatorAtom, dateFormatAtom, drivePendingAtom } from "@/state/atoms";
+import { booksAtom, comicsAtom, moviesAtom, musicAtom, videoGamesAtom, languageAtom, colorSchemeAtom, customTypesAtom, customItemsAtom, driveClientIdAtom, driveSyncStatusAtom, driveLastSyncAtom, appPasswordHashAtom, thousandSeparatorAtom, dateFormatAtom, drivePendingAtom, subCollectionsAtom, subCollectionItemsAtom } from "@/state/atoms";
 import type { CollectionData, CustomCollectionType } from "@/types";
 import { useT } from "@/i18n/useT";
 import type { Language } from "@/i18n/translations";
@@ -45,27 +45,42 @@ export function SettingsPage() {
   const [, setVideoGames] = useAtom(videoGamesAtom);
   const [, setMovies] = useAtom(moviesAtom);
   const [, setMusic] = useAtom(musicAtom);
+  const [subCollections, setSubCollections] = useAtom(subCollectionsAtom);
+  const [subCollectionItems, setSubCollectionItems] = useAtom(subCollectionItemsAtom);
   const [customTypes, setCustomTypes] = useAtom(customTypesAtom);
   const [, setCustomItems] = useAtom(customItemsAtom);
   const [newTypeOpen, setNewTypeOpen] = useState(false);
   const [deleteAllTarget, setDeleteAllTarget] = useState<string | null>(null);
   const [deleteAllConfirm, setDeleteAllConfirm] = useState("");
 
-  const COLLECTIONS = [
-    { value: "books",      label: t("nav_books") },
-    { value: "comics",     label: t("nav_comics") },
-    { value: "videogames", label: t("nav_videogames") },
-    { value: "movies",     label: t("nav_movies") },
-    { value: "music",      label: t("nav_music") },
+  const topLevelOptions = [
+    { value: "books",      label: t("nav_books"),     group: "Collections" },
+    { value: "comics",     label: t("nav_comics"),     group: "Collections" },
+    { value: "videogames", label: t("nav_videogames"), group: "Collections" },
+    { value: "movies",     label: t("nav_movies"),     group: "Collections" },
+    { value: "music",      label: t("nav_music"),      group: "Collections" },
   ];
+  const subCollectionOptions = subCollections.map((s) => ({
+    value: s.id,
+    label: s.name,
+    group: "Sub-collections",
+  }));
+  const allSelectOptions = [...topLevelOptions, ...subCollectionOptions];
 
   const handleDeleteAll = () => {
-    if (deleteAllTarget === "books")      setBooks([]);
-    if (deleteAllTarget === "comics")     setComics([]);
-    if (deleteAllTarget === "videogames") setVideoGames([]);
-    if (deleteAllTarget === "movies")     setMovies([]);
-    if (deleteAllTarget === "music")      setMusic([]);
-    notifications.show({ message: `All ${COLLECTIONS.find(c => c.value === deleteAllTarget)?.label} deleted.`, color: "red" });
+    if (deleteAllTarget === "books")           setBooks([]);
+    else if (deleteAllTarget === "comics")     setComics([]);
+    else if (deleteAllTarget === "videogames") setVideoGames([]);
+    else if (deleteAllTarget === "movies")     setMovies([]);
+    else if (deleteAllTarget === "music")      setMusic([]);
+    else {
+      const newItems = { ...subCollectionItems };
+      delete newItems[deleteAllTarget!];
+      setSubCollectionItems(newItems);
+      setSubCollections(subCollections.filter((s) => s.id !== deleteAllTarget));
+    }
+    const label = allSelectOptions.find((c) => c.value === deleteAllTarget)?.label ?? "";
+    notifications.show({ message: `All ${label} deleted.`, color: "red" });
     setDeleteAllTarget(null);
     setDeleteAllConfirm("");
   };
@@ -378,7 +393,7 @@ export function SettingsPage() {
             </Stack>
             <Select
               placeholder={t("settings_danger_placeholder")}
-              data={COLLECTIONS}
+              data={allSelectOptions}
               value={deleteAllTarget}
               onChange={(v) => { setDeleteAllTarget(v); setDeleteAllConfirm(""); }}
               style={{ width: 180 }}
@@ -404,12 +419,12 @@ export function SettingsPage() {
       <Modal
         opened={!!deleteAllTarget}
         onClose={() => { setDeleteAllTarget(null); setDeleteAllConfirm(""); }}
-        title={<Text fw={700} c="red">{t("settings_danger_modal_title", { collection: COLLECTIONS.find(c => c.value === deleteAllTarget)?.label ?? "" })}</Text>}
+        title={<Text fw={700} c="red">{t("settings_danger_modal_title", { collection: allSelectOptions.find((c) => c.value === deleteAllTarget)?.label ?? "" })}</Text>}
         centered
       >
         <Stack gap="md">
           <Text size="sm">
-            {t("settings_danger_modal_body", { collection: COLLECTIONS.find(c => c.value === deleteAllTarget)?.label ?? "" })}
+            {t("settings_danger_modal_body", { collection: allSelectOptions.find((c) => c.value === deleteAllTarget)?.label ?? "" })}
           </Text>
           <Text size="sm">{t("settings_danger_modal_confirm_prompt")}</Text>
           <TextInput
