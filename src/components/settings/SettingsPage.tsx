@@ -60,7 +60,7 @@ export function SettingsPage() {
     { value: "movies",     label: t("nav_movies"),     group: "Collections" },
     { value: "music",      label: t("nav_music"),      group: "Collections" },
   ];
-  const subCollectionOptions = subCollections.map((s) => ({
+  const subCollectionOptions = (subCollections ?? []).map((s) => ({
     value: s.id,
     label: s.name,
     group: "Sub-collections",
@@ -74,7 +74,7 @@ export function SettingsPage() {
     else if (deleteAllTarget === "movies")     setMovies([]);
     else if (deleteAllTarget === "music")      setMusic([]);
     else {
-      const newItems = { ...subCollectionItems };
+      const newItems = { ...(subCollectionItems ?? {}) };
       delete newItems[deleteAllTarget!];
       setSubCollectionItems(newItems);
       setSubCollections(subCollections.filter((s) => s.id !== deleteAllTarget));
