@@ -46,6 +46,7 @@ const COLLECTION_KEYS = [
   "collection-sub-collections",
   "collection-sub-items",
   "collection-sub-columns",
+  "collection-sub-custom-columns",
 ] as const;
 
 export type IDBSnapshot = {
@@ -60,6 +61,7 @@ export type IDBSnapshot = {
   "collection-sub-collections": unknown[];
   "collection-sub-items": Record<string, unknown[]>;
   "collection-sub-columns": Record<string, unknown[]>;
+  "collection-sub-custom-columns": Record<string, unknown[]>;
 };
 
 export async function loadAllFromIDB(): Promise<IDBSnapshot> {
@@ -77,6 +79,7 @@ export async function loadAllFromIDB(): Promise<IDBSnapshot> {
       "collection-sub-collections": Array.isArray(values[8]) ? values[8] : [],
       "collection-sub-items":       values[9] && typeof values[9] === "object" && !Array.isArray(values[9]) ? values[9] as Record<string, unknown[]> : {},
       "collection-sub-columns":     values[10] && typeof values[10] === "object" && !Array.isArray(values[10]) ? values[10] as Record<string, unknown[]> : {},
+      "collection-sub-custom-columns": values[11] && typeof values[11] === "object" && !Array.isArray(values[11]) ? values[11] as Record<string, unknown[]> : {},
     };
   } catch {
     return {
@@ -84,6 +87,7 @@ export async function loadAllFromIDB(): Promise<IDBSnapshot> {
       "collection-movies": [], "collection-music": [], "collection-trashed": [],
       "collection-custom-types": [], "collection-custom-items": {},
       "collection-sub-collections": [], "collection-sub-items": {}, "collection-sub-columns": {},
+      "collection-sub-custom-columns": {},
     };
   }
 }

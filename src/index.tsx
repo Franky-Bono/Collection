@@ -8,9 +8,10 @@ import {
   booksAtom, comicsAtom, videoGamesAtom, moviesAtom, musicAtom,
   trashedItemsAtom, customTypesAtom, customItemsAtom,
   subCollectionsAtom, subCollectionItemsAtom, subCollectionColumnsAtom,
+  subCollectionCustomColumnsAtom,
 } from "./state/atoms";
 import type { Book, Comic, VideoGame, Movie, MusicAlbum, CustomCollectionType, SubCollection, AnyItem } from "./types";
-import type { TrashedEntry, MovieColumnSetting } from "./state/atoms";
+import type { TrashedEntry, MovieColumnSetting, CustomColumnDef } from "./state/atoms";
 import type { CustomItem } from "./types";
 
 async function bootstrap() {
@@ -29,6 +30,7 @@ async function bootstrap() {
   store.set(subCollectionsAtom,      snapshot["collection-sub-collections"] as SubCollection[]);
   store.set(subCollectionItemsAtom,  snapshot["collection-sub-items"] as Record<string, AnyItem[]>);
   store.set(subCollectionColumnsAtom, snapshot["collection-sub-columns"] as Record<string, MovieColumnSetting[]>);
+  store.set(subCollectionCustomColumnsAtom, snapshot["collection-sub-custom-columns"] as Record<string, CustomColumnDef[]>);
 
   ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>

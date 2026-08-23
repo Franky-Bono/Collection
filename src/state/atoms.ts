@@ -257,3 +257,18 @@ export const customColumnsAtom = atomWithStorage<Record<string, CustomColumnDef[
   "collection-custom-columns",
   {},
 );
+
+// Extra user-defined columns per sub-collection id
+const _subCollectionCustomColumnsBase = atom<Record<string, CustomColumnDef[]>>({});
+export const subCollectionCustomColumnsAtom = atom<
+  Record<string, CustomColumnDef[]>,
+  [Record<string, CustomColumnDef[]> | ((prev: Record<string, CustomColumnDef[]>) => Record<string, CustomColumnDef[]>)],
+  void
+>(
+  (get) => get(_subCollectionCustomColumnsBase),
+  (get, set, update) => {
+    const next = typeof update === "function" ? update(get(_subCollectionCustomColumnsBase)) : update;
+    set(_subCollectionCustomColumnsBase, next);
+    setInIDB("collection-sub-custom-columns", next);
+  }
+);

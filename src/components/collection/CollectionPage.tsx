@@ -116,7 +116,7 @@ function ColumnsModal({ opened, onClose, settings, allDefs, onChange, customDefs
                 size="xs"
                 variant="subtle"
                 color="red"
-                title="Delete column"
+                title={t("col_delete_column" as TranslationKey)}
                 onClick={() => {
                   onDeleteCustom(s.key);
                   setDraft((prev) => prev.filter((x) => x.key !== s.key));
@@ -133,8 +133,8 @@ function ColumnsModal({ opened, onClose, settings, allDefs, onChange, customDefs
             <Box style={{ padding: "8px", border: "1px dashed var(--mantine-color-default-border)", borderRadius: 6 }}>
               <TextInput
                 size="xs"
-                label="Column label"
-                placeholder="e.g. Barcode, Condition, Price"
+                label={t("col_new_column_label" as TranslationKey)}
+                placeholder={t("col_new_column_label_placeholder" as TranslationKey)}
                 value={newColLabel}
                 onChange={(e) => setNewColLabel(e.currentTarget.value)}
                 mb="xs"
@@ -142,7 +142,7 @@ function ColumnsModal({ opened, onClose, settings, allDefs, onChange, customDefs
               />
               <NumberInput
                 size="xs"
-                label="Width (px)"
+                label={t("col_new_column_width" as TranslationKey)}
                 value={newColWidth}
                 onChange={(v) => setNewColWidth(typeof v === "number" ? v : 120)}
                 min={60}
@@ -151,8 +151,8 @@ function ColumnsModal({ opened, onClose, settings, allDefs, onChange, customDefs
                 mb="xs"
               />
               <Group gap="xs" justify="flex-end">
-                <Button size="compact-xs" variant="default" onClick={() => setNewColOpen(false)}>Cancel</Button>
-                <Button size="compact-xs" onClick={handleAddColumn} disabled={!newColLabel.trim()}>Add</Button>
+                <Button size="compact-xs" variant="default" onClick={() => setNewColOpen(false)}>{t("col_new_column_cancel" as TranslationKey)}</Button>
+                <Button size="compact-xs" onClick={handleAddColumn} disabled={!newColLabel.trim()}>{t("col_new_column_add" as TranslationKey)}</Button>
               </Group>
             </Box>
           ) : (
@@ -162,7 +162,7 @@ function ColumnsModal({ opened, onClose, settings, allDefs, onChange, customDefs
               leftSection={<IconPlus size={13} />}
               onClick={() => setNewColOpen(true)}
             >
-              New column
+              {t("col_new_column" as TranslationKey)}
             </Button>
           )
         )}

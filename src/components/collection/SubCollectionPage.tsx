@@ -5,9 +5,9 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { notifications } from "@mantine/notifications";
 import { CollectionPage, FormatBadge, StatusBadge, getStatusLabel, getFormatLabel } from "./CollectionPage";
-import { subCollectionsAtom, subCollectionItemsAtom, makeSubCollectionItemsAtom, trashedItemsAtom, subCollectionColumnsAtom } from "@/state/atoms";
+import { subCollectionsAtom, subCollectionItemsAtom, makeSubCollectionItemsAtom, trashedItemsAtom, subCollectionColumnsAtom, subCollectionCustomColumnsAtom } from "@/state/atoms";
 import type { CollectionKind, Movie, Book, Comic, MusicAlbum, VideoGame, AnyItem } from "@/types";
-import type { MovieColumnSetting } from "@/state/atoms";
+import type { MovieColumnSetting, CustomColumnDef } from "@/state/atoms";
 import { useT } from "@/i18n/useT";
 import type { TranslationKey } from "@/i18n/translations";
 
@@ -129,22 +129,40 @@ export function SubCollectionPage({ kind, collectionId }: Props) {
   const safeKind = (subCollection?.kind ?? kind) as CollectionKind;
   const allColumns = useKindColumns(safeKind, t);
   const [allSubColumns, setAllSubColumns] = useAtom(subCollectionColumnsAtom);
+  const [allSubCustomColumns, setAllSubCustomColumns] = useAtom(subCollectionCustomColumnsAtom);
 
-  const storedCols: MovieColumnSetting[] = allSubColumns[collectionId] ?? allColumns.map((c) => ({ key: c.key, visible: true }));
+  const kindCustom: CustomColumnDef[] = allSubCustomColumns[collectionId] ?? [];
+
+  const handleAddCustom = (col: CustomColumnDef) => {
+    setAllSubCustomColumns((prev) => ({ ...prev, [collectionId]: [...(prev[collectionId] ?? []), col] }));
+    setAllSubColumns((prev) => ({ ...prev, [collectionId]: [...(prev[collectionId] ?? allColumns.map((c) => ({ key: c.key, visible: true }))), { key: col.key, visible: true }] }));
+  };
+
+  const handleDeleteCustom = (key: string) => {
+    setAllSubCustomColumns((prev) => ({ ...prev, [collectionId]: (prev[collectionId] ?? []).filter((c) => c.key !== key) }));
+    setAllSubColumns((prev) => ({ ...prev, [collectionId]: (prev[collectionId] ?? []).filter((s) => s.key !== key) }));
+  };
+
+  const ALL_COLUMNS = [
+    ...allColumns,
+    ...kindCustom.map((c) => ({ key: c.key, label: c.label, width: c.width })),
+  ];
+
+  const storedCols: MovieColumnSetting[] = allSubColumns[collectionId] ?? ALL_COLUMNS.map((c) => ({ key: c.key, visible: true }));
 
   const setColumnSettings = (s: MovieColumnSetting[]) => {
     setAllSubColumns((prev) => ({ ...prev, [collectionId]: s }));
   };
 
   const mergedColumns = [
-    ...storedCols.filter(s => allColumns.some(c => c.key === s.key)),
-    ...allColumns.filter(c => !storedCols.some(s => s.key === c.key)).map(c => ({ key: c.key, visible: false })),
+    ...storedCols.filter(s => ALL_COLUMNS.some(c => c.key === s.key)),
+    ...ALL_COLUMNS.filter(c => !storedCols.some(s => s.key === c.key)).map(c => ({ key: c.key, visible: false })),
   ];
 
   const columns = mergedColumns
     .filter((s) => s.visible)
-    .map((s) => allColumns.find((c) => c.key === s.key))
-    .filter(Boolean) as typeof allColumns[number][];
+    .map((s) => ALL_COLUMNS.find((c) => c.key === s.key))
+    .filter(Boolean) as typeof ALL_COLUMNS[number][];
 
   const currentItems = useAtomValue(itemsAtom);
 
@@ -209,9 +227,12 @@ export function SubCollectionPage({ kind, collectionId }: Props) {
         titleWidth={KIND_TITLE_WIDTH[safeKind]}
         columns={columns as any}
         columnSettings={mergedColumns}
-        allColumnDefs={allColumns.map((c) => ({ key: c.key, label: c.label }))}
+        allColumnDefs={ALL_COLUMNS.map((c) => ({ key: c.key, label: c.label }))}
         setColumnSettings={setColumnSettings}        subCollectionId={collectionId}
         extraHeaderActions={extraHeaderActions}
+        customColumnDefs={kindCustom}
+        onAddCustomColumn={handleAddCustom}
+        onDeleteCustomColumn={handleDeleteCustom}
       />
 
       {/* Rename modal */}

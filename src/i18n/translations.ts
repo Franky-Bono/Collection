@@ -69,6 +69,13 @@ const translations = {
     col_language: "Language",
     col_columns_title: "Columns",
     col_columns_hint: "Toggle visibility and drag to reorder.",
+    col_new_column: "New column",
+    col_new_column_label: "Column label",
+    col_new_column_label_placeholder: "e.g. Barcode, Condition, Price",
+    col_new_column_width: "Width (px)",
+    col_new_column_add: "Add",
+    col_new_column_cancel: "Cancel",
+    col_delete_column: "Delete column",
     common_apply: "Apply",
 
     // Status values
@@ -369,6 +376,13 @@ const translations = {
     col_language: "Langue",
     col_columns_title: "Colonnes",
     col_columns_hint: "Activez/désactivez et glissez pour réordonner.",
+    col_new_column: "Nouvelle colonne",
+    col_new_column_label: "Nom de la colonne",
+    col_new_column_label_placeholder: "ex. Code-barres, État, Prix",
+    col_new_column_width: "Largeur (px)",
+    col_new_column_add: "Ajouter",
+    col_new_column_cancel: "Annuler",
+    col_delete_column: "Supprimer la colonne",
     common_apply: "Appliquer",
 
     // Status values
