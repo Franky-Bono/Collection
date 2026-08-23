@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { notifications } from "@mantine/notifications";
 import { CollectionPage, FormatBadge, StatusBadge, getStatusLabel, getFormatLabel } from "./CollectionPage";
-import { subCollectionsAtom, subCollectionItemsAtom, makeSubCollectionItemsAtom, trashedItemsAtom, movieColumnsAtom, bookColumnsAtom, comicColumnsAtom, musicColumnsAtom, videoGameColumnsAtom } from "@/state/atoms";
+import { subCollectionsAtom, subCollectionItemsAtom, makeSubCollectionItemsAtom, trashedItemsAtom, subCollectionColumnsAtom } from "@/state/atoms";
 import type { CollectionKind, Movie, Book, Comic, MusicAlbum, VideoGame, AnyItem } from "@/types";
 import type { MovieColumnSetting } from "@/state/atoms";
 import { useT } from "@/i18n/useT";
@@ -107,21 +107,6 @@ function useKindColumns(kind: CollectionKind, t: (k: TranslationKey) => string) 
   }, [kind]);
 }
 
-function useKindColumnSettings(kind: CollectionKind): [MovieColumnSetting[], (s: MovieColumnSetting[]) => void] {
-  const [movieCols, setMovieCols] = useAtom(movieColumnsAtom);
-  const [bookCols, setBookCols] = useAtom(bookColumnsAtom);
-  const [comicCols, setComicCols] = useAtom(comicColumnsAtom);
-  const [musicCols, setMusicCols] = useAtom(musicColumnsAtom);
-  const [videoGameCols, setVideoGameCols] = useAtom(videoGameColumnsAtom);
-  switch (kind) {
-    case "movies":     return [movieCols, setMovieCols];
-    case "books":      return [bookCols, setBookCols];
-    case "comics":     return [comicCols, setComicCols];
-    case "music":      return [musicCols, setMusicCols];
-    case "videogames": return [videoGameCols, setVideoGameCols];
-  }
-}
-
 interface Props {
   kind: string;
   collectionId: string;
@@ -143,11 +128,17 @@ export function SubCollectionPage({ kind, collectionId }: Props) {
 
   const safeKind = (subCollection?.kind ?? kind) as CollectionKind;
   const allColumns = useKindColumns(safeKind, t);
-  const [columnSettings, setColumnSettings] = useKindColumnSettings(safeKind);
+  const [allSubColumns, setAllSubColumns] = useAtom(subCollectionColumnsAtom);
+
+  const storedCols: MovieColumnSetting[] = allSubColumns[collectionId] ?? allColumns.map((c) => ({ key: c.key, visible: true }));
+
+  const setColumnSettings = (s: MovieColumnSetting[]) => {
+    setAllSubColumns((prev) => ({ ...prev, [collectionId]: s }));
+  };
 
   const mergedColumns = [
-    ...columnSettings.filter(s => allColumns.some(c => c.key === s.key)),
-    ...allColumns.filter(c => !columnSettings.some(s => s.key === c.key)).map(c => ({ key: c.key, visible: false })),
+    ...storedCols.filter(s => allColumns.some(c => c.key === s.key)),
+    ...allColumns.filter(c => !storedCols.some(s => s.key === c.key)).map(c => ({ key: c.key, visible: false })),
   ];
 
   const columns = mergedColumns
@@ -219,8 +210,7 @@ export function SubCollectionPage({ kind, collectionId }: Props) {
         columns={columns as any}
         columnSettings={mergedColumns}
         allColumnDefs={allColumns.map((c) => ({ key: c.key, label: c.label }))}
-        setColumnSettings={setColumnSettings}
-        subCollectionId={collectionId}
+        setColumnSettings={setColumnSettings}        subCollectionId={collectionId}
         extraHeaderActions={extraHeaderActions}
       />
 

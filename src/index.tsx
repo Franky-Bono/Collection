@@ -7,10 +7,10 @@ import { loadAllFromIDB } from "./storage/idb";
 import {
   booksAtom, comicsAtom, videoGamesAtom, moviesAtom, musicAtom,
   trashedItemsAtom, customTypesAtom, customItemsAtom,
-  subCollectionsAtom, subCollectionItemsAtom,
+  subCollectionsAtom, subCollectionItemsAtom, subCollectionColumnsAtom,
 } from "./state/atoms";
 import type { Book, Comic, VideoGame, Movie, MusicAlbum, CustomCollectionType, SubCollection, AnyItem } from "./types";
-import type { TrashedEntry } from "./state/atoms";
+import type { TrashedEntry, MovieColumnSetting } from "./state/atoms";
 import type { CustomItem } from "./types";
 
 async function bootstrap() {
@@ -28,6 +28,7 @@ async function bootstrap() {
   store.set(customItemsAtom,         snapshot["collection-custom-items"] as Record<string, CustomItem[]>);
   store.set(subCollectionsAtom,      snapshot["collection-sub-collections"] as SubCollection[]);
   store.set(subCollectionItemsAtom,  snapshot["collection-sub-items"] as Record<string, AnyItem[]>);
+  store.set(subCollectionColumnsAtom, snapshot["collection-sub-columns"] as Record<string, MovieColumnSetting[]>);
 
   ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>

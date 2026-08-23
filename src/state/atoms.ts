@@ -135,6 +135,21 @@ export function makeSubCollectionItemsAtom(collectionId: string) {
 
 export const sidebarExpandedAtom = atomWithStorage<string[]>("collection-sidebar-expanded", []);
 
+// Per-sub-collection column settings — Record<subCollectionId, MovieColumnSetting[]>
+const _subColColumnsBase = atom<Record<string, MovieColumnSetting[]>>({});
+export const subCollectionColumnsAtom = atom<
+  Record<string, MovieColumnSetting[]>,
+  [Record<string, MovieColumnSetting[]> | ((prev: Record<string, MovieColumnSetting[]>) => Record<string, MovieColumnSetting[]>)],
+  void
+>(
+  (get) => get(_subColColumnsBase),
+  (get, set, update) => {
+    const next = typeof update === "function" ? update(get(_subColColumnsBase)) : update;
+    set(_subColColumnsBase, next);
+    setInIDB("collection-sub-columns", next);
+  }
+);
+
 export const driveClientIdAtom = atomWithStorage<string>("collection-drive-client-id", "");
 export const driveSyncEnabledAtom = atomWithStorage<boolean>("collection-drive-enabled", false);
 export const driveLastSyncAtom = atomWithStorage<string | null>("collection-drive-last-sync", null);
