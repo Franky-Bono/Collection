@@ -5,14 +5,20 @@ import {
   customTypesAtom, customItemsAtom, driveLoadDoneAtom,
   driveClientIdAtom, driveSyncEnabledAtom, driveLastSyncAtom,
   driveSyncStatusAtom, driveUserAtom, drivePendingAtom,
+  subCollectionsAtom, subCollectionItemsAtom,
 } from "@/state/atoms";
 import {
   initGoogleDrive, signIn, signInSilent, signOut, isSignedIn, getUser,
   readFromDrive, writeToDrive, deleteAllDriveFiles, setStatusListener,
 } from "@/lib/driveSync";
-import type { CollectionData, CustomItem } from "@/types";
+import type { CollectionData, CustomItem, AnyItem, SubCollection } from "@/types";
 
-type Snapshot = CollectionData & { music: unknown[]; customItems: Record<string, CustomItem[]> };
+type Snapshot = CollectionData & {
+  music: unknown[];
+  customItems: Record<string, CustomItem[]>;
+  subCollections: SubCollection[];
+  subCollectionItems: Record<string, AnyItem[]>;
+};
 
 // Module-level singletons shared across all hook instances
 let driveInitialized = false;
@@ -39,6 +45,8 @@ export function useDriveSync() {
   const [, setMusic]      = useAtom(musicAtom);
   const [, setCustomTypes] = useAtom(customTypesAtom);
   const [, setCustomItems] = useAtom(customItemsAtom);
+  const [, setSubCollections] = useAtom(subCollectionsAtom);
+  const [, setSubCollectionItems] = useAtom(subCollectionItemsAtom);
 
   const books      = useAtomValue(booksAtom);
   const comics     = useAtomValue(comicsAtom);
@@ -47,6 +55,8 @@ export function useDriveSync() {
   const music      = useAtomValue(musicAtom);
   const customTypes = useAtomValue(customTypesAtom);
   const customItems = useAtomValue(customItemsAtom);
+  const subCollections = useAtomValue(subCollectionsAtom);
+  const subCollectionItems = useAtomValue(subCollectionItemsAtom);
   const idbReady      = true; // atoms are pre-hydrated from IDB before React mounts
   const [driveLoadDone, setDriveLoadDone] = useAtom(driveLoadDoneAtom);
 
@@ -82,11 +92,15 @@ export function useDriveSync() {
     if (Array.isArray((data as any).music)) setMusic((data as any).music);
     if (Array.isArray(data.customTypes)) setCustomTypes(data.customTypes);
     if (data.customItems && typeof data.customItems === "object") setCustomItems(data.customItems as Record<string, CustomItem[]>);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (Array.isArray((data as any).subCollections)) setSubCollections((data as any).subCollections);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((data as any).subCollectionItems && typeof (data as any).subCollectionItems === "object") setSubCollectionItems((data as any).subCollectionItems as Record<string, AnyItem[]>);
     setLastSync(new Date().toISOString());
     driveLoadSucceeded = true;
     setDriveLoadDone(true);
     setTimeout(() => { isLoadingFromDrive = false; }, 100);
-  }, [setBooks, setComics, setVideoGames, setMovies, setMusic, setCustomTypes, setCustomItems, setLastSync, setDriveLoadDone]);
+  }, [setBooks, setComics, setVideoGames, setMovies, setMusic, setCustomTypes, setCustomItems, setSubCollections, setSubCollectionItems, setLastSync, setDriveLoadDone]);
 
   const pushToDrive = useCallback(async (snapshot: Snapshot) => {
     if (!isSignedIn()) {
@@ -157,6 +171,7 @@ export function useDriveSync() {
     const snapshot: Snapshot = {
       books, comics, videoGames, movies, music: music as unknown[],
       customTypes, customItems: customItems as Record<string, CustomItem[]>,
+      subCollections, subCollectionItems: subCollectionItems as Record<string, AnyItem[]>,
       version: 1,
     };
     if (debounceTimer) clearTimeout(debounceTimer);
@@ -165,7 +180,7 @@ export function useDriveSync() {
       pushToDrive(snapshot);
     }, 2000);
     return () => { if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; } };
-  }, [books, comics, videoGames, movies, music, customTypes, customItems, enabled, driveUser, driveLoadDone, pushToDrive]);
+  }, [books, comics, videoGames, movies, music, customTypes, customItems, subCollections, subCollectionItems, enabled, driveUser, driveLoadDone, pushToDrive]);
 
   // Poll every 30s to pick up changes from other browsers
   useEffect(() => {
@@ -191,12 +206,13 @@ export function useDriveSync() {
     const snapshot: Snapshot = {
       books, comics, videoGames, movies, music: music as unknown[],
       customTypes, customItems: customItems as Record<string, CustomItem[]>,
+      subCollections, subCollectionItems: subCollectionItems as Record<string, AnyItem[]>,
       version: 1,
     };
     await writeToDrive(snapshot);
     setPending(false);
     setLastSync(new Date().toISOString());
-  }, [clientId, setDriveUser, books, comics, videoGames, movies, music, customTypes, customItems, setPending, setLastSync]);
+  }, [clientId, setDriveUser, books, comics, videoGames, movies, music, customTypes, customItems, subCollections, subCollectionItems, setPending, setLastSync]);
 
   const connect = useCallback(async (id: string) => {
     await initGoogleDrive(id);
