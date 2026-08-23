@@ -7,6 +7,7 @@ export interface Book {
   format?: string;
   status?: string;
   rating?: number;
+  rank?: number;
   notes?: string;
   edition?: string;
   language?: string;
@@ -26,6 +27,7 @@ export interface Comic {
   format?: string;
   status?: string;
   rating?: number;
+  rank?: number;
   notes?: string;
   series?: string;
   issue?: number;
@@ -46,6 +48,7 @@ export interface VideoGame {
   platform?: string;
   status?: string;
   rating?: number;
+  rank?: number;
   notes?: string;
   location?: string;
   coverUrl?: string;
@@ -63,6 +66,7 @@ export interface Movie {
   edition?: string;
   status?: string;
   rating?: number;
+  rank?: number;
   notes?: string;
   quality?: string;
   country?: string;
@@ -80,6 +84,7 @@ export interface MusicAlbum {
   format?: string;
   status?: string;
   rating?: number;
+  rank?: number;
   notes?: string;
   label?: string;
   duration?: string;

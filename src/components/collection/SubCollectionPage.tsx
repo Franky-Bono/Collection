@@ -51,6 +51,7 @@ function useKindColumns(kind: CollectionKind, t: (k: TranslationKey) => string) 
           { key: "genre",    label: t("col_genre"),    width: 120 },
           { key: "status",   label: t("col_status"),   width: 120, render: (item: Movie) => <StatusBadge value={item.status} />, getSearchValue: (item: Movie) => getStatusLabel(item.status ?? "", t) },
           { key: "rating",   label: t("col_rating"),   width: 90  },
+          { key: "rank",     label: t("col_rank"),     width: 70  },
           { key: "notes",    label: t("col_notes"),    width: 160, render: (item: Movie) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
         ];
       case "books":
@@ -66,6 +67,7 @@ function useKindColumns(kind: CollectionKind, t: (k: TranslationKey) => string) 
           { key: "format",    label: t("col_format"),    width: 110, render: (item: Book) => <FormatBadge value={item.format} />, getSearchValue: (item: Book) => getFormatLabel(item.format ?? "", t) },
           { key: "status",    label: t("col_status"),    width: 120, render: (item: Book) => <StatusBadge value={item.status} />, getSearchValue: (item: Book) => getStatusLabel(item.status ?? "", t) },
           { key: "rating",    label: t("col_rating"),    width: 90  },
+          { key: "rank",      label: t("col_rank"),      width: 70  },
           { key: "notes",     label: t("col_notes"),     width: 200, render: (item: Book) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
         ];
       case "comics":
@@ -80,6 +82,7 @@ function useKindColumns(kind: CollectionKind, t: (k: TranslationKey) => string) 
           { key: "condition", label: t("col_condition"), width: 110, render: (item: Comic) => <StatusBadge value={item.condition} />, getSearchValue: (item: Comic) => getStatusLabel(item.condition ?? "", t) },
           { key: "status",    label: t("col_status"),    width: 120, render: (item: Comic) => <StatusBadge value={item.status} />, getSearchValue: (item: Comic) => getStatusLabel(item.status ?? "", t) },
           { key: "rating",    label: t("col_rating"),    width: 90  },
+          { key: "rank",      label: t("col_rank"),      width: 70  },
           { key: "notes",     label: t("col_notes"),     width: 160, render: (item: Comic) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
         ];
       case "music":
@@ -90,6 +93,7 @@ function useKindColumns(kind: CollectionKind, t: (k: TranslationKey) => string) 
           { key: "format",  label: t("col_format"),  width: 110, render: (item: MusicAlbum) => <FormatBadge value={item.format} />, getSearchValue: (item: MusicAlbum) => getFormatLabel(item.format ?? "", t) },
           { key: "status",  label: t("col_status"),  width: 120, render: (item: MusicAlbum) => <StatusBadge value={item.status} />, getSearchValue: (item: MusicAlbum) => getStatusLabel(item.status ?? "", t) },
           { key: "rating",  label: t("col_rating"),  width: 90  },
+          { key: "rank",    label: t("col_rank"),    width: 70  },
           { key: "notes",   label: t("col_notes"),   width: 160, render: (item: MusicAlbum) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
         ];
       case "videogames":
@@ -100,6 +104,7 @@ function useKindColumns(kind: CollectionKind, t: (k: TranslationKey) => string) 
           { key: "platform", label: t("col_platform"), width: 120 },
           { key: "status",   label: t("col_status"),   width: 120, render: (item: VideoGame) => <StatusBadge value={item.status} />, getSearchValue: (item: VideoGame) => getStatusLabel(item.status ?? "", t) },
           { key: "rating",   label: t("col_rating"),   width: 90  },
+          { key: "rank",     label: t("col_rank"),     width: 70  },
           { key: "notes",    label: t("col_notes"),    width: 160, render: (item: VideoGame) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
         ];
     }

@@ -178,6 +178,7 @@ export const DEFAULT_MOVIE_COLUMNS: MovieColumnSetting[] = [
   { key: "genre",     visible: true  },
   { key: "status",    visible: false },
   { key: "rating",    visible: false },
+  { key: "rank",      visible: false },
   { key: "notes",     visible: false },
 ];
 export const movieColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
@@ -197,6 +198,7 @@ export const DEFAULT_BOOK_COLUMNS: MovieColumnSetting[] = [
   { key: "format",   visible: true  },
   { key: "status",   visible: true  },
   { key: "rating",   visible: true  },
+  { key: "rank",     visible: false },
   { key: "notes",    visible: false },
 ];
 export const bookColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
@@ -215,6 +217,7 @@ export const DEFAULT_COMIC_COLUMNS: MovieColumnSetting[] = [
   { key: "condition", visible: true  },
   { key: "status",    visible: true  },
   { key: "rating",    visible: true  },
+  { key: "rank",      visible: false },
   { key: "notes",     visible: false },
 ];
 export const comicColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
@@ -229,6 +232,7 @@ export const DEFAULT_VIDEOGAME_COLUMNS: MovieColumnSetting[] = [
   { key: "platform", visible: true  },
   { key: "status",   visible: true  },
   { key: "rating",   visible: true  },
+  { key: "rank",     visible: false },
   { key: "notes",    visible: false },
 ];
 export const videoGameColumnsAtom = atomWithStorage<MovieColumnSetting[]>(
@@ -243,6 +247,7 @@ export const DEFAULT_MUSIC_COLUMNS: MovieColumnSetting[] = [
   { key: "format",  visible: true  },
   { key: "status",  visible: true  },
   { key: "rating",  visible: true  },
+  { key: "rank",    visible: false },
   { key: "notes",   visible: false },
 ];
 export const musicColumnsAtom = atomWithStorage<MovieColumnSetting[]>(

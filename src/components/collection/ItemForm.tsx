@@ -52,6 +52,7 @@ export function ItemForm({ kind, initial, opened, onClose, onSave }: Props) {
       format: (initial as unknown as Record<string, unknown>)?.format as string ?? "",
       status: (initial as unknown as Record<string, unknown>)?.status as string ?? "",
       rating: (initial as unknown as Record<string, unknown>)?.rating as number ?? undefined,
+      rank: (initial as unknown as Record<string, unknown>)?.rank as number ?? undefined,
       notes: (initial as unknown as Record<string, unknown>)?.notes as string ?? "",
       platform: (initial as unknown as Record<string, unknown>)?.platform as string ?? "",
       series: (initial as unknown as Record<string, unknown>)?.series as string ?? "",
@@ -164,6 +165,7 @@ export function ItemForm({ kind, initial, opened, onClose, onSave }: Props) {
             {...form.getInputProps("status")}
           />
           <NumberInput label={t("form_rating")} min={1} max={5} {...form.getInputProps("rating")} />
+          <NumberInput label={t("form_rank")} min={1} {...form.getInputProps("rank")} />
           <TextInput label={t("form_location")} placeholder={t("form_location_placeholder")} {...form.getInputProps("location")} />
           <TextInput label={t("form_cover_url")} placeholder={t("form_cover_url_placeholder")} {...form.getInputProps("coverUrl")} />
           <Textarea label={t("form_notes")} autosize minRows={2} {...form.getInputProps("notes")} />

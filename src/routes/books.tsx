@@ -30,6 +30,7 @@ function BooksPage() {
     { key: "format",   label: t("col_format"),   width: 110, render: (item: Book) => <FormatBadge value={item.format} />, getSearchValue: (item: Book) => getFormatLabel(item.format ?? "", t) },
     { key: "status",   label: t("col_status"),   width: 120, render: (item: Book) => <StatusBadge value={item.status} />, getSearchValue: (item: Book) => getStatusLabel(item.status ?? "", t) },
     { key: "rating",   label: t("col_rating"),   width: 90  },
+    { key: "rank",     label: t("col_rank"),     width: 70  },
     { key: "notes",    label: t("col_notes"),    width: 200, render: (item: Book) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
   ] as const;
 

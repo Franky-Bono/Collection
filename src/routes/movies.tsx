@@ -30,6 +30,7 @@ function MoviesPage() {
     { key: "genre",     label: t("col_genre"),    width: 120 },
     { key: "status",    label: t("col_status"),   width: 120, render: (item: Movie) => <StatusBadge value={item.status} />, getSearchValue: (item: Movie) => getStatusLabel(item.status ?? "", t) },
     { key: "rating",    label: t("col_rating"),   width: 90  },
+    { key: "rank",      label: t("col_rank"),     width: 70  },
     { key: "notes",     label: t("col_notes"),    width: 160, render: (item: Movie) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
   ] as const;
 

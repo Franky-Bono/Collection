@@ -29,6 +29,7 @@ function ComicsPage() {
     { key: "condition", label: t("col_condition"), width: 110, render: (item: Comic) => <StatusBadge value={item.condition} />, getSearchValue: (item: Comic) => getStatusLabel(item.condition ?? "", t) },
     { key: "status",    label: t("col_status"),    width: 120, render: (item: Comic) => <StatusBadge value={item.status} />, getSearchValue: (item: Comic) => getStatusLabel(item.status ?? "", t) },
     { key: "rating",    label: t("col_rating"),    width: 90  },
+    { key: "rank",      label: t("col_rank"),      width: 70  },
     { key: "notes",     label: t("col_notes"),     width: 160, render: (item: Comic) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
   ] as const;
 

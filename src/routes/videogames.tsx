@@ -25,6 +25,7 @@ function VideoGamesPage() {
     { key: "platform", label: t("col_platform"), width: 120 },
     { key: "status",   label: t("col_status"),   width: 120, render: (item: VideoGame) => <StatusBadge value={item.status} />, getSearchValue: (item: VideoGame) => getStatusLabel(item.status ?? "", t) },
     { key: "rating",   label: t("col_rating"),   width: 90  },
+    { key: "rank",     label: t("col_rank"),     width: 70  },
     { key: "notes",    label: t("col_notes"),    width: 160, render: (item: VideoGame) => <Text size="sm" c="dimmed">{item.notes ?? ""}</Text> },
   ] as const;
 
