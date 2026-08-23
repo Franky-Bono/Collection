@@ -49,14 +49,31 @@ export function Sidebar() {
   const [newSubKind, setNewSubKind] = useState<CollectionKind>("movies");
   const [newSubName, setNewSubName] = useState("");
 
-  const isExpanded = (kind: CollectionKind) => expandedKinds.includes(kind);
+  const isExpanded = (kind: CollectionKind) => {
+    const kindSubs = subCollections.filter((s) => s.kind === kind);
+    // Auto-expand if sub-collections exist and user hasn't explicitly collapsed
+    if (kindSubs.length > 0 && !expandedKinds.includes(`collapsed:${kind}`)) return true;
+    return expandedKinds.includes(kind);
+  };
 
   const toggleExpand = (kind: CollectionKind) => {
-    setExpandedKinds(
-      isExpanded(kind)
-        ? expandedKinds.filter((k) => k !== kind)
-        : [...expandedKinds, kind]
-    );
+    const kindSubs = subCollections.filter((s) => s.kind === kind);
+    if (kindSubs.length > 0) {
+      // Toggle the collapsed marker
+      const collapseKey = `collapsed:${kind}`;
+      const expandKey = kind;
+      if (isExpanded(kind)) {
+        setExpandedKinds([...expandedKinds.filter((k) => k !== expandKey), collapseKey]);
+      } else {
+        setExpandedKinds(expandedKinds.filter((k) => k !== collapseKey));
+      }
+    } else {
+      setExpandedKinds(
+        expandedKinds.includes(kind)
+          ? expandedKinds.filter((k) => k !== kind)
+          : [...expandedKinds, kind]
+      );
+    }
   };
 
   const openNewSub = (kind: CollectionKind) => {
@@ -72,9 +89,6 @@ export function Sidebar() {
       ...prev,
       { id, kind: newSubKind, name: newSubName.trim(), createdAt: new Date().toISOString() },
     ]);
-    if (!isExpanded(newSubKind)) {
-      setExpandedKinds([...expandedKinds, newSubKind]);
-    }
     setNewSubOpen(false);
     navigate({ to: `/${newSubKind}/${id}` });
   };
@@ -125,24 +139,24 @@ export function Sidebar() {
 
         return (
           <Box key={kind}>
-            {/* Category row */}
+            {/* Category row — always navigates to the category page; chevron toggles expand */}
             <Box
               className={`${styles.categoryRow} ${isKindActive && !hasActiveSub ? styles.categoryRowActive : ""}`}
-              onClick={() => {
-                if (kindSubs.length === 0) {
-                  navigate({ to });
-                } else {
-                  toggleExpand(kind);
-                }
-              }}
+              onClick={() => navigate({ to })}
             >
               {icon}
               <span style={{ flex: 1 }}>{t(labelKey)}</span>
               {kindSubs.length > 0 && (
-                <IconChevronDown
-                  size={13}
-                  className={`${styles.chevron} ${expanded ? styles.chevronOpen : ""}`}
-                />
+                <Box
+                  component="span"
+                  onClick={(e) => { e.stopPropagation(); toggleExpand(kind); }}
+                  style={{ display: "flex", alignItems: "center", padding: "2px 2px 2px 6px" }}
+                >
+                  <IconChevronDown
+                    size={13}
+                    className={`${styles.chevron} ${expanded ? styles.chevronOpen : ""}`}
+                  />
+                </Box>
               )}
             </Box>
 
