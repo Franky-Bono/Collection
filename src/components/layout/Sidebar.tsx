@@ -7,7 +7,8 @@ import {
 import { useAtom, useAtomValue } from "jotai";
 import {
   sidebarCollapsedAtom, customTypesAtom, trashedItemsAtom,
-  subCollectionsAtom, sidebarExpandedAtom,
+  subCollectionsAtom, sidebarExpandedAtom, subCollectionItemsAtom,
+  booksAtom, comicsAtom, videoGamesAtom, moviesAtom, musicAtom, customItemsAtom,
 } from "@/state/atoms";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import * as styles from "./Sidebar.css";
@@ -41,6 +42,21 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useAtom(sidebarCollapsedAtom);
   const customTypes = useAtomValue(customTypesAtom);
   const [subCollections, setSubCollections] = useAtom(subCollectionsAtom);
+  const subCollectionItemsMap = useAtomValue(subCollectionItemsAtom);
+  const books = useAtomValue(booksAtom);
+  const comics = useAtomValue(comicsAtom);
+  const videoGames = useAtomValue(videoGamesAtom);
+  const movies = useAtomValue(moviesAtom);
+  const music = useAtomValue(musicAtom);
+  const customItems = useAtomValue(customItemsAtom);
+
+  const collectionCounts: Record<string, number> = {
+    books:      (books      ?? []).length,
+    comics:     (comics     ?? []).length,
+    videogames: (videoGames ?? []).length,
+    movies:     (movies     ?? []).length,
+    music:      (music      ?? []).length,
+  };
   const location = useLocation();
   const binCount = useAtomValue(trashedItemsAtom).length;
 
@@ -146,6 +162,9 @@ export function Sidebar() {
             >
               {icon}
               <span style={{ flex: 1 }}>{t(labelKey)}</span>
+              <Text size="xs" c="dimmed" style={{ marginRight: kindSubs.length > 0 ? 0 : 4 }}>
+                ({collectionCounts[kind] ?? 0})
+              </Text>
               {kindSubs.length > 0 && (
                 <Box
                   component="span"
@@ -167,9 +186,10 @@ export function Sidebar() {
               return (
                 <Link key={sub.id} to={subTo} style={{ textDecoration: "none" }}>
                   <Box className={`${styles.sublink} ${isSubActive ? styles.sublinkActive : ""}`}>
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
                       {sub.name}
                     </span>
+                    <Text size="xs" c="dimmed">({(subCollectionItemsMap?.[sub.id] ?? []).length})</Text>
                   </Box>
                 </Link>
               );
@@ -210,7 +230,8 @@ export function Sidebar() {
                 <Link to={to} style={{ textDecoration: "none" }}>
                   <Box className={`${styles.link} ${collapsed ? styles.linkCollapsed : ""} ${isActive ? styles.active : ""}`}>
                     <CustomTypeIcon iconName={ct.icon} size={18} />
-                    {!collapsed && <span>{ct.name}</span>}
+                    {!collapsed && <span style={{ flex: 1 }}>{ct.name}</span>}
+                    {!collapsed && <Text size="xs" c="dimmed">({(customItems?.[ct.id] ?? []).length})</Text>}
                   </Box>
                 </Link>
               </Tooltip>
