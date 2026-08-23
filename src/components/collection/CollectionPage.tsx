@@ -1,8 +1,8 @@
-import { ActionIcon, Badge, Box, Button, Card, Checkbox, Group, Modal, Table, Text, TextInput, Stack, UnstyledButton, Switch, Tooltip } from "@mantine/core";
+import { ActionIcon, Badge, Box, Button, Card, Checkbox, Group, Modal, Table, Text, TextInput, Stack, UnstyledButton, Switch, Tooltip, Select } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconBarcode, IconChevronDown, IconChevronUp, IconColumns, IconEdit, IconGripVertical, IconPlus, IconSelector, IconTrash, IconX } from "@tabler/icons-react";
+import { IconBarcode, IconChevronDown, IconChevronUp, IconColumns, IconCopy, IconEdit, IconGripVertical, IconPlus, IconSelector, IconTrash, IconX } from "@tabler/icons-react";
 import type { WritableAtom } from "jotai";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { AnyItem, CollectionKind } from "@/types";
@@ -15,7 +15,7 @@ import { fetchImageAsBase64 } from "@/lib/imageUtils";
 import type { TranslationKey } from "@/i18n/translations";
 import { useFormatting } from "@/hooks/useFormatting";
 import type { MovieColumnSetting, TrashedEntry } from "@/state/atoms";
-import { trashedItemsAtom } from "@/state/atoms";
+import { trashedItemsAtom, subCollectionsAtom, subCollectionItemsAtom, booksAtom, comicsAtom, videoGamesAtom, moviesAtom, musicAtom } from "@/state/atoms";
 
 interface ColumnDef {
   key: string;
@@ -96,6 +96,78 @@ function ColumnsModal({ opened, onClose, settings, allDefs, onChange }: {
           <Button size="xs" onClick={() => { onChange(draft); onClose(); }}>{t("common_apply" as TranslationKey)}</Button>
         </Group>
       </Stack>
+    </Modal>
+  );
+}
+
+function CopyToModal({ opened, onClose, kind, currentSubCollectionId, selectedItems }: {
+  opened: boolean;
+  onClose: () => void;
+  kind: CollectionKind;
+  currentSubCollectionId?: string;
+  selectedItems: AnyItem[];
+}) {
+  const t = useT();
+  const { formatNumber } = useFormatting();
+  const subCollections = useAtomValue(subCollectionsAtom);
+  const [subCollectionItems, setSubCollectionItems] = useAtom(subCollectionItemsAtom);
+  const [books, setBooks] = useAtom(booksAtom);
+  const [comics, setComics] = useAtom(comicsAtom);
+  const [videoGames, setVideoGames] = useAtom(videoGamesAtom);
+  const [movies, setMovies] = useAtom(moviesAtom);
+  const [music, setMusic] = useAtom(musicAtom);
+  const [target, setTarget] = useState<string | null>(null);
+
+  useEffect(() => { if (opened) setTarget(null); }, [opened]);
+
+  const kindSubs = subCollections.filter((s) => s.kind === kind);
+
+  // Build options: built-in collection first, then sub-collections
+  const kindLabel: Record<CollectionKind, string> = {
+    movies: t("nav_movies"), books: t("nav_books"), comics: t("nav_comics"),
+    music: t("nav_music"), videogames: t("nav_videogames"),
+  };
+
+  const options = [
+    { value: "__builtin__", label: kindLabel[kind] },
+    ...kindSubs.map((s) => ({ value: s.id, label: s.name })),
+  ].filter((o) => o.value !== (currentSubCollectionId ?? "__none__") &&
+    !(o.value === "__builtin__" && currentSubCollectionId === undefined));
+
+  const handleCopy = () => {
+    if (!target) return;
+    const copies = selectedItems.map((item) => ({ ...item, id: crypto.randomUUID() }));
+    if (target === "__builtin__") {
+      switch (kind) {
+        case "movies":     setMovies((prev) => [...prev, ...copies]); break;
+        case "books":      setBooks((prev) => [...prev, ...copies]); break;
+        case "comics":     setComics((prev) => [...prev, ...copies]); break;
+        case "music":      setMusic((prev) => [...prev, ...copies]); break;
+        case "videogames": setVideoGames((prev) => [...prev, ...copies]); break;
+      }
+    } else {
+      setSubCollectionItems((prev) => ({
+        ...prev,
+        [target]: [...(prev[target] ?? []), ...copies],
+      }));
+    }
+    notifications.show({ message: t("sub_copy_done", { count: formatNumber(copies.length) }), color: "blue" });
+    onClose();
+  };
+
+  return (
+    <Modal opened={opened} onClose={onClose} title={t("sub_copy_title", { count: formatNumber(selectedItems.length) })} centered size="sm">
+      <Select
+        placeholder="Choose a collection…"
+        data={options}
+        value={target}
+        onChange={setTarget}
+        searchable
+      />
+      <Group justify="flex-end" mt="md" gap="xs">
+        <Button variant="default" size="xs" onClick={onClose}>{t("sub_cancel")}</Button>
+        <Button size="xs" onClick={handleCopy} disabled={!target}>{t("sub_copy_btn")}</Button>
+      </Group>
     </Modal>
   );
 }
@@ -199,6 +271,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
   const [detailItem, setDetailItem] = useState<AnyItem | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [columnsOpen, setColumnsOpen] = useState(false);
+  const [copyOpen, setCopyOpen] = useState(false);
   const parentRef = useRef<HTMLDivElement>(null);
 
   const setFilter = (key: string, value: string) => {
@@ -365,6 +438,11 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
           {selected.size > 0 && (
             <Button size="xs" color="red" variant="subtle" leftSection={<IconTrash size={13} />} onClick={handleDeleteSelected}>
               {t("collection_delete_selected", { count: formatNumber(selected.size) })}
+            </Button>
+          )}
+          {selected.size > 0 && (
+            <Button size="xs" color="blue" variant="subtle" leftSection={<IconCopy size={13} />} onClick={() => setCopyOpen(true)}>
+              {t("sub_copy_to")}
             </Button>
           )}
         </Group>
@@ -552,6 +630,13 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
           onChange={setColumnSettings}
         />
       )}
+      <CopyToModal
+        opened={copyOpen}
+        onClose={() => { setCopyOpen(false); setSelected(new Set()); }}
+        kind={kind}
+        currentSubCollectionId={subCollectionId}
+        selectedItems={rawItems.filter((i) => selected.has(i.id))}
+      />
     </Box>
   );
 }

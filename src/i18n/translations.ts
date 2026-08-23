@@ -285,6 +285,10 @@ const translations = {
 
     // Sub-collections
     sub_new: "New collection",
+    sub_copy_to: "Copy to...",
+    sub_copy_title: "Copy {count} item(s) to",
+    sub_copy_btn: "Copy here",
+    sub_copy_done: "Copied {count} item(s).",
     sub_new_title: "New collection",
     sub_name_label: "Name",
     sub_name_placeholder: "e.g. Blu-rays, Watchlist, 4K...",
@@ -581,6 +585,10 @@ const translations = {
 
     // Sub-collections
     sub_new: "Nouvelle collection",
+    sub_copy_to: "Copier vers...",
+    sub_copy_title: "Copier {count} élément(s) vers",
+    sub_copy_btn: "Copier ici",
+    sub_copy_done: "{count} élément(s) copié(s).",
     sub_new_title: "Nouvelle collection",
     sub_name_label: "Nom",
     sub_name_placeholder: "ex. Blu-rays, À voir, 4K...",
