@@ -1,22 +1,21 @@
 import { Box, Button, Card, Group, Select, Stack, Table, Text, Title } from "@mantine/core";
 import { createFileRoute } from "@tanstack/react-router";
-import { useAtom } from "jotai";
-import { booksAtom, comicsAtom, moviesAtom, musicAtom, videoGamesAtom } from "@/state/atoms";
+import { useAtom, useAtomValue } from "jotai";
+import { booksAtom, comicsAtom, moviesAtom, musicAtom, videoGamesAtom, subCollectionsAtom, subCollectionItemsAtom } from "@/state/atoms";
 import { useState, useRef } from "react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { notifications } from "@mantine/notifications";
 import { useT } from "@/i18n/useT";
 import { useFormatting } from "@/hooks/useFormatting";
-import type { Book, Comic, VideoGame, Movie, MusicAlbum } from "@/types";
+import type { Book, Comic, VideoGame, Movie, MusicAlbum, AnyItem } from "@/types";
 
 export const Route = createFileRoute("/import")({
   component: ImportPage,
 });
 
 import type { TranslationKey } from "@/i18n/translations";
-
-type CollectionKind = "books" | "comics" | "videogames" | "movies" | "music";
+import type { CollectionKind } from "@/types";
 
 const FIELD_LABEL_KEY: Record<string, TranslationKey> = {  title:     "col_title",
   author:    "col_author",
@@ -60,13 +59,26 @@ function ImportPage() {
   const [videoGames, setVideoGames] = useAtom(videoGamesAtom);
   const [movies, setMovies] = useAtom(moviesAtom);
   const [music, setMusic] = useAtom(musicAtom);
+  const subCollections = useAtomValue(subCollectionsAtom);
+  const [subCollectionItems, setSubCollectionItems] = useAtom(subCollectionItemsAtom);
 
   const [kind, setKind] = useState<CollectionKind>("movies");
+  const [destSubId, setDestSubId] = useState<string | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
   const [rows, setRows] = useState<Record<string, string>[]>([]);
   const [allRows, setAllRows] = useState<Record<string, string>[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const kindSubs = subCollections.filter((s) => s.kind === kind);
+
+  const destOptions = [
+    { value: "__builtin__", label: (() => {
+      const m: Record<CollectionKind, string> = { movies: t("nav_movies"), books: t("nav_books"), comics: t("nav_comics"), music: t("nav_music"), videogames: t("nav_videogames") };
+      return m[kind];
+    })() },
+    ...kindSubs.map((s) => ({ value: s.id, label: s.name })),
+  ];
 
   const handleFile = (file: File) => {
     const ext = file.name.split(".").pop()?.toLowerCase();
@@ -135,11 +147,20 @@ function ImportPage() {
       };
 
       const items = allRows.map(makeItem);
-      if (kind === "books")      setBooks([...books, ...items as unknown as Book[]]);
-      if (kind === "comics")     setComics([...comics, ...items as unknown as Comic[]]);
-      if (kind === "videogames") setVideoGames([...videoGames, ...items as unknown as VideoGame[]]);
-      if (kind === "movies")     setMovies([...movies, ...items as unknown as Movie[]]);
-      if (kind === "music")      setMusic([...music, ...items as unknown as MusicAlbum[]]);
+      const dest = destSubId && destSubId !== "__builtin__" ? destSubId : null;
+
+      if (dest) {
+        setSubCollectionItems((prev) => ({
+          ...prev,
+          [dest]: [...(prev[dest] ?? []), ...items as unknown as AnyItem[]],
+        }));
+      } else {
+        if (kind === "books")      setBooks([...books, ...items as unknown as Book[]]);
+        if (kind === "comics")     setComics([...comics, ...items as unknown as Comic[]]);
+        if (kind === "videogames") setVideoGames([...videoGames, ...items as unknown as VideoGame[]]);
+        if (kind === "movies")     setMovies([...movies, ...items as unknown as Movie[]]);
+        if (kind === "music")      setMusic([...music, ...items as unknown as MusicAlbum[]]);
+      }
       notifications.show({ message: t("import_success", { count: formatNumber(items.length) }), color: "green" });
       setHeaders([]); setRows([]); setAllRows([]); setMapping({});
     } catch (err) {
@@ -160,7 +181,11 @@ function ImportPage() {
             <Select
               label="Collection"
               value={kind}
-              onChange={(v) => { setKind(v as CollectionKind); setHeaders([]); setRows([]); setAllRows([]); setMapping({}); }}
+              onChange={(v) => {
+                setKind(v as CollectionKind);
+                setDestSubId(null);
+                setHeaders([]); setRows([]); setAllRows([]); setMapping({});
+              }}
               data={[
                 { value: "movies",     label: t("nav_movies") },
                 { value: "books",      label: t("nav_books") },
@@ -169,6 +194,14 @@ function ImportPage() {
                 { value: "videogames", label: t("nav_videogames") },
               ]}
             />
+            {destOptions.length > 1 && (
+              <Select
+                label="Import into"
+                value={destSubId ?? "__builtin__"}
+                onChange={(v) => setDestSubId(v)}
+                data={destOptions}
+              />
+            )}
             <input ref={fileRef} type="file" accept=".csv,.xlsx,.xls" style={{ display: "none" }}
               onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
             <Button variant="default" onClick={() => fileRef.current?.click()}>
