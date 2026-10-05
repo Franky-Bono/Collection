@@ -57,7 +57,7 @@ function MusicPage() {
   return (
     <CollectionPage
       title={t("nav_music")}
-      singular="Album"
+      singular="singular_album"
       icon={<IconMusic size={22} />}
       atom={musicAtom as any}
       kind="music"

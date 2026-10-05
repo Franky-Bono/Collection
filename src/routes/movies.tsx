@@ -62,7 +62,7 @@ function MoviesPage() {
   return (
     <CollectionPage
       title={t("nav_movies")}
-      singular="Movie"
+      singular="singular_movie"
       icon={<IconMovie size={22} />}
       atom={moviesAtom as any}
       kind="movies"

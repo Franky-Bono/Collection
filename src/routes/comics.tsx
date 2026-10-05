@@ -61,7 +61,7 @@ function ComicsPage() {
   return (
     <CollectionPage
       title={t("nav_comics")}
-      singular="Comic"
+      singular="singular_comic"
       icon={<IconBook2 size={22} />}
       atom={comicsAtom as any}
       kind="comics"

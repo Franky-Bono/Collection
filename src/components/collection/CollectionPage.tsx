@@ -27,7 +27,7 @@ interface ColumnDef {
 
 interface Props {
   title: string;
-  singular: string;
+  singular: TranslationKey;
   icon: React.ReactNode;
   atom: WritableAtom<AnyItem[], [AnyItem[]], void>;
   kind: CollectionKind;
@@ -542,7 +542,7 @@ export function CollectionPage({ title, singular, icon, atom, kind, columns, tit
             leftSection={<IconPlus size={16} />}
             onClick={() => setAddOpen(true)}
           >
-            {t("collection_add", { singular })}
+            {t("collection_add", { singular: t(singular) })}
           </Button>
         </Group>
       </Group>

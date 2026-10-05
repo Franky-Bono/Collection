@@ -57,7 +57,7 @@ function VideoGamesPage() {
   return (
     <CollectionPage
       title={t("nav_videogames")}
-      singular="Video Game"
+      singular="singular_videogame"
       icon={<IconDeviceGamepad2 size={22} />}
       atom={videoGamesAtom as any}
       kind="videogames"

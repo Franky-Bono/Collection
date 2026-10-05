@@ -19,12 +19,12 @@ const KIND_ICONS: Record<CollectionKind, React.ReactNode> = {
   videogames: <IconDeviceGamepad2 size={22} />,
 };
 
-const KIND_SINGULAR: Record<CollectionKind, string> = {
-  movies:     "Movie",
-  books:      "Book",
-  comics:     "Comic",
-  music:      "Album",
-  videogames: "Video Game",
+const KIND_SINGULAR: Record<CollectionKind, TranslationKey> = {
+  movies:     "singular_movie",
+  books:      "singular_book",
+  comics:     "singular_comic",
+  music:      "singular_album",
+  videogames: "singular_videogame",
 };
 
 const KIND_TITLE_WIDTH: Record<CollectionKind, number> = {
